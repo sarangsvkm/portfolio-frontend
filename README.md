@@ -2,6 +2,14 @@
 
 A professional portfolio frontend built with React, TypeScript, Vite, and Tailwind CSS, paired with a Spring Boot backend. The application includes a public-facing portfolio experience and an admin CMS for managing profile content, experience, education, skills, and projects.
 
+## Highlights
+
+- Modern public portfolio experience built with React and TypeScript
+- Dedicated admin CMS for profile, experience, education, skills, and project management
+- API-integrated architecture aligned with the included Postman collection
+- Responsive UI with animated public sections and structured admin workflows
+- Clean local development flow with Vite proxy support for Spring Boot APIs
+
 ## Overview
 
 This project is designed as a portfolio management interface with two primary surfaces:
@@ -209,4 +217,6 @@ https://github.com/sarangsvkm/portfolio-frontend
 
 ## License
 
-This project is intended for personal portfolio and professional demonstration use unless otherwise specified.
+This project is licensed under the MIT License.
+
+See the [LICENSE](./LICENSE) file for full details.
