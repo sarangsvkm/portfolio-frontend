@@ -9,7 +9,8 @@ import { useStatusDialog } from '../../hooks/useStatusDialog';
 export default function EducationEditor() {
   const [educations, setEducations] = useState<Education[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [savingIndex, setSavingIndex] = useState<number | null>(null);
+  const [deletingIndex, setDeletingIndex] = useState<number | null>(null);
   const { showDialog, dialogElement } = useStatusDialog();
 
   useEffect(() => {
@@ -33,20 +34,43 @@ export default function EducationEditor() {
     ]);
   };
 
-  const handleRemove = (index: number) => {
-    setEducations(educations.filter((_, i) => i !== index));
+  const handleRemove = async (index: number) => {
+    const education = educations[index];
+    if (!education) return;
+
+    if (!education.id) {
+      setEducations(educations.filter((_, i) => i !== index));
+      return;
+    }
+
+    setDeletingIndex(index);
+
+    try {
+      await resumeService.deleteEducation(education.id, authService.getCredentials());
+      setEducations(educations.filter((_, i) => i !== index));
+      showDialog('success', 'Education Deleted', 'Education deleted successfully.');
+    } catch (error) {
+      console.error('Error deleting education', error);
+      showDialog('error', 'Education Delete Failed', error instanceof Error ? error.message : 'Unable to delete education.');
+    } finally {
+      setDeletingIndex(null);
+    }
   };
 
-  const handleSave = async () => {
-    setSaving(true);
+  const handleSave = async (index: number) => {
+    const education = educations[index];
+    if (!education) return;
+
+    setSavingIndex(index);
     try {
-      await resumeService.saveEducations(educations, authService.getCredentials());
+      const savedEducation = await resumeService.saveEducation(education, authService.getCredentials());
+      setEducations(educations.map((item, itemIndex) => (itemIndex === index ? savedEducation : item)));
       showDialog('success', 'Education Saved', 'Education saved successfully.');
     } catch (error) {
       console.error('Error saving education', error);
-      showDialog('error', 'Education Save Failed', 'Check the /api/education POST/PUT backend and credentials.');
+      showDialog('error', 'Education Save Failed', error instanceof Error ? error.message : 'Check the /api/education POST/PUT backend and credentials.');
     } finally {
-      setSaving(false);
+      setSavingIndex(null);
     }
   };
 
@@ -73,18 +97,14 @@ export default function EducationEditor() {
           <button onClick={handleAdd} className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl font-semibold transition-all">
             <Plus className="w-4 h-4" /> Add New
           </button>
-          <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-semibold shadow-md shadow-purple-500/20 transition-all disabled:opacity-50">
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            {saving ? 'Saving...' : 'Save Changes'}
-          </button>
         </div>
       </div>
 
       <div className="space-y-6">
         {educations.map((edu, index) => (
           <div key={edu.id || index} className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm relative">
-            <button onClick={() => handleRemove(index)} className="absolute top-6 right-6 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
-              <Trash2 className="w-5 h-5" />
+            <button onClick={() => handleRemove(index)} disabled={deletingIndex === index} className="absolute top-6 right-6 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50">
+              {deletingIndex === index ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
             </button>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pr-12">
@@ -107,6 +127,12 @@ export default function EducationEditor() {
               <div className="space-y-2 md:col-span-2">
                 <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2"><Calendar className="w-4 h-4" /> End Date</label>
                 <input type="text" value={edu.endDate || ''} onChange={(e) => handleChange(index, 'endDate', e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all" />
+              </div>
+              <div className="md:col-span-2 flex justify-end">
+                <button onClick={() => handleSave(index)} disabled={savingIndex === index} className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-semibold shadow-md shadow-purple-500/20 transition-all disabled:opacity-50">
+                  {savingIndex === index ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                  {savingIndex === index ? 'Saving...' : edu.id ? 'Update Education' : 'Create Education'}
+                </button>
               </div>
             </div>
           </div>

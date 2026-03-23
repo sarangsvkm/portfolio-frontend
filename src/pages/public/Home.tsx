@@ -14,6 +14,7 @@ import {
 import { resumeService } from '../../services/resumeService';
 import type { ResumeViewModel } from '../../types';
 import { createFallbackResume, normalizeResume } from '../../utils/resume';
+import { resolveAssetUrl } from '../../utils/assetUrl';
 
 export default function PublicHome() {
   const [data, setData] = useState<ResumeViewModel | null>(null);
@@ -41,6 +42,9 @@ export default function PublicHome() {
   if (!data) return null;
 
   const { profile, skills, projects, experiences, educations } = data;
+  const profileImageUrl = resolveAssetUrl(profile.imageUrl);
+  const bannerImageUrl = resolveAssetUrl(profile.bannerUrl);
+  const resumeUrl = resolveAssetUrl(profile.resumeUrl);
   const githubLink = profile.socialMediaLinks.find((link) => link.platform.toLowerCase() === 'github');
   const linkedinLink = profile.socialMediaLinks.find((link) => link.platform.toLowerCase() === 'linkedin');
 
@@ -53,13 +57,13 @@ export default function PublicHome() {
     <div className="flex flex-col gap-32 pb-16">
       <section
         className="relative min-h-[52vh] bg-cover bg-center"
-        style={profile.bannerUrl ? { backgroundImage: `linear-gradient(rgba(8, 15, 35, 0.45), rgba(8, 15, 35, 0.7)), url(${profile.bannerUrl})` } : undefined}
+        style={bannerImageUrl ? { backgroundImage: `linear-gradient(rgba(8, 15, 35, 0.45), rgba(8, 15, 35, 0.7)), url(${bannerImageUrl})` } : undefined}
       >
         <div className="max-w-5xl mx-auto px-4 sm:px-6 md:px-8 pt-16 md:pt-24 pb-10">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn} id="about" className="space-y-8">
             <div className="flex flex-col md:flex-row md:items-end gap-8">
-              {profile.imageUrl && (
-                <img src={profile.imageUrl} alt={profile.name} className="w-28 h-28 md:w-36 md:h-36 rounded-3xl object-cover border-4 border-white/70 shadow-2xl" />
+              {profileImageUrl && (
+                <img src={profileImageUrl} alt={profile.name} className="w-28 h-28 md:w-36 md:h-36 rounded-3xl object-cover border-4 border-white/70 shadow-2xl" />
               )}
               <div className="space-y-5 text-white">
                 <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-[1.05]">
@@ -96,8 +100,8 @@ export default function PublicHome() {
                   <Linkedin className="w-6 h-6" />
                 </a>
               )}
-              {profile.resumeUrl && (
-                <a href={profile.resumeUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-5 py-3 bg-white text-slate-900 rounded-full font-semibold shadow-lg hover:scale-[1.02] transition-transform">
+              {resumeUrl && (
+                <a href={resumeUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-5 py-3 bg-white text-slate-900 rounded-full font-semibold shadow-lg hover:scale-[1.02] transition-transform">
                   <Download className="w-5 h-5" /> View Resume
                 </a>
               )}
@@ -130,7 +134,7 @@ export default function PublicHome() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {projects.map((project, i) => (
               <motion.div whileHover={{ y: -8 }} key={project.id || i} className="group flex flex-col justify-between bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:border-purple-300 dark:hover:border-purple-600/50 transition-all duration-300">
-                {project.imageUrl && <img src={project.imageUrl} alt={project.title} className="h-48 w-full object-cover" />}
+                {project.imageUrl && <img src={resolveAssetUrl(project.imageUrl)} alt={project.title} className="h-48 w-full object-cover" />}
                 <div className="p-8">
                   <h3 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100 mb-4 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">{project.title}</h3>
                   <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-8">{project.description}</p>
@@ -229,3 +233,5 @@ export default function PublicHome() {
     </div>
   );
 }
+
+

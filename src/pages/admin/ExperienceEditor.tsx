@@ -9,7 +9,8 @@ import { useStatusDialog } from '../../hooks/useStatusDialog';
 export default function ExperienceEditor() {
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [savingIndex, setSavingIndex] = useState<number | null>(null);
+  const [deletingIndex, setDeletingIndex] = useState<number | null>(null);
   const { showDialog, dialogElement } = useStatusDialog();
 
   useEffect(() => {
@@ -33,21 +34,43 @@ export default function ExperienceEditor() {
     ]);
   };
 
-  const handleRemove = (index: number) => {
-    setExperiences(experiences.filter((_, i) => i !== index));
-  };
+  const handleRemove = async (index: number) => {
+    const experience = experiences[index];
+    if (!experience) return;
 
-  const handleSave = async () => {
-    setSaving(true);
+    if (!experience.id) {
+      setExperiences(experiences.filter((_, i) => i !== index));
+      return;
+    }
+
+    setDeletingIndex(index);
 
     try {
-      await resumeService.saveExperiences(experiences, authService.getCredentials());
+      await resumeService.deleteExperience(experience.id, authService.getCredentials());
+      setExperiences(experiences.filter((_, i) => i !== index));
+      showDialog('success', 'Experience Deleted', 'Experience deleted successfully.');
+    } catch (error) {
+      console.error('Error deleting experience', error);
+      showDialog('error', 'Experience Delete Failed', error instanceof Error ? error.message : 'Unable to delete experience.');
+    } finally {
+      setDeletingIndex(null);
+    }
+  };
+
+  const handleSave = async (index: number) => {
+    const experience = experiences[index];
+    if (!experience) return;
+    setSavingIndex(index);
+
+    try {
+      const savedExperience = await resumeService.saveExperience(experience, authService.getCredentials());
+      setExperiences(experiences.map((item, itemIndex) => (itemIndex === index ? savedExperience : item)));
       showDialog('success', 'Experience Saved', 'Experience saved successfully.');
     } catch (err) {
       console.error('Error saving experience', err);
-      showDialog('error', 'Experience Save Failed', 'Check the /api/experience POST/PUT backend and credentials.');
+      showDialog('error', 'Experience Save Failed', err instanceof Error ? err.message : 'Check the /api/experience POST/PUT backend and credentials.');
     } finally {
-      setSaving(false);
+      setSavingIndex(null);
     }
   };
 
@@ -74,10 +97,6 @@ export default function ExperienceEditor() {
           <button onClick={handleAdd} className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl font-semibold transition-all">
             <Plus className="w-4 h-4" /> Add New
           </button>
-          <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-semibold shadow-md shadow-purple-500/20 transition-all disabled:opacity-50">
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            {saving ? 'Saving...' : 'Save Changes'}
-          </button>
         </div>
       </div>
 
@@ -90,8 +109,8 @@ export default function ExperienceEditor() {
         ) : (
           experiences.map((exp, index) => (
             <div key={exp.id || index} className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm relative group transition-all">
-              <button onClick={() => handleRemove(index)} className="absolute top-6 right-6 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="Remove Entry">
-                <Trash2 className="w-5 h-5" />
+              <button onClick={() => handleRemove(index)} disabled={deletingIndex === index} className="absolute top-6 right-6 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50" title="Remove Entry">
+                {deletingIndex === index ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
               </button>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pr-12">
@@ -114,6 +133,12 @@ export default function ExperienceEditor() {
                 <div className="space-y-2 md:col-span-2">
                   <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Description / Responsibilities</label>
                   <textarea rows={4} value={exp.description || ''} onChange={(e) => handleChange(index, 'description', e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all resize-y" placeholder="Describe your achievements and tasks..." />
+                </div>
+                <div className="md:col-span-2 flex justify-end">
+                  <button onClick={() => handleSave(index)} disabled={savingIndex === index} className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-semibold shadow-md shadow-purple-500/20 transition-all disabled:opacity-50">
+                    {savingIndex === index ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                    {savingIndex === index ? 'Saving...' : exp.id ? 'Update Experience' : 'Create Experience'}
+                  </button>
                 </div>
               </div>
             </div>

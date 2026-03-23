@@ -9,7 +9,8 @@ import { useStatusDialog } from '../../hooks/useStatusDialog';
 export default function SkillsEditor() {
   const [skills, setSkills] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [savingIndex, setSavingIndex] = useState<number | null>(null);
+  const [deletingIndex, setDeletingIndex] = useState<number | null>(null);
   const { showDialog, dialogElement } = useStatusDialog();
 
   useEffect(() => {
@@ -30,20 +31,43 @@ export default function SkillsEditor() {
     setSkills([{ name: '', level: '' }, ...skills]);
   };
 
-  const handleRemove = (index: number) => {
-    setSkills(skills.filter((_, i) => i !== index));
+  const handleRemove = async (index: number) => {
+    const skill = skills[index];
+    if (!skill) return;
+
+    if (!skill.id) {
+      setSkills(skills.filter((_, i) => i !== index));
+      return;
+    }
+
+    setDeletingIndex(index);
+
+    try {
+      await resumeService.deleteSkill(skill.id, authService.getCredentials());
+      setSkills(skills.filter((_, i) => i !== index));
+      showDialog('success', 'Skill Deleted', 'Skill deleted successfully.');
+    } catch (error) {
+      console.error('Error deleting skill', error);
+      showDialog('error', 'Skill Delete Failed', error instanceof Error ? error.message : 'Unable to delete skill.');
+    } finally {
+      setDeletingIndex(null);
+    }
   };
 
-  const handleSave = async () => {
-    setSaving(true);
+  const handleSave = async (index: number) => {
+    const skill = skills[index];
+    if (!skill) return;
+
+    setSavingIndex(index);
     try {
-      await resumeService.saveSkills(skills, authService.getCredentials());
+      const savedSkill = await resumeService.saveSkill(skill, authService.getCredentials());
+      setSkills(skills.map((item, itemIndex) => (itemIndex === index ? savedSkill : item)));
       showDialog('success', 'Skills Saved', 'Skills saved successfully.');
     } catch (error) {
       console.error('Error saving skills', error);
-      showDialog('error', 'Skills Save Failed', 'Check the /api/skills POST/PUT backend and credentials.');
+      showDialog('error', 'Skills Save Failed', error instanceof Error ? error.message : 'Check the /api/skills POST/PUT backend and credentials.');
     } finally {
-      setSaving(false);
+      setSavingIndex(null);
     }
   };
 
@@ -70,10 +94,6 @@ export default function SkillsEditor() {
           <button onClick={handleAdd} className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl font-semibold transition-all">
             <Plus className="w-4 h-4" /> Add New
           </button>
-          <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-semibold shadow-md shadow-purple-500/20 transition-all disabled:opacity-50">
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            {saving ? 'Saving...' : 'Save Changes'}
-          </button>
         </div>
       </div>
 
@@ -88,9 +108,15 @@ export default function SkillsEditor() {
               <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Level</label>
               <input type="text" value={skill.level} onChange={(e) => handleChange(index, 'level', e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all" placeholder="Advanced" />
             </div>
-            <button onClick={() => handleRemove(index)} className="h-12 px-4 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors">
-              <Trash2 className="w-5 h-5" />
+            <button onClick={() => handleRemove(index)} disabled={deletingIndex === index} className="h-12 px-4 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors disabled:opacity-50">
+              {deletingIndex === index ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
             </button>
+            <div className="md:col-span-3 flex justify-end">
+              <button onClick={() => handleSave(index)} disabled={savingIndex === index} className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-semibold shadow-md shadow-purple-500/20 transition-all disabled:opacity-50">
+                {savingIndex === index ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                {savingIndex === index ? 'Saving...' : skill.id ? 'Update Skill' : 'Create Skill'}
+              </button>
+            </div>
           </div>
         ))}
 

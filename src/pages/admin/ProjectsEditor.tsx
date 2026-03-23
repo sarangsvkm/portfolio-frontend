@@ -9,7 +9,8 @@ import { useStatusDialog } from '../../hooks/useStatusDialog';
 export default function ProjectsEditor() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [savingIndex, setSavingIndex] = useState<number | null>(null);
+  const [deletingIndex, setDeletingIndex] = useState<number | null>(null);
   const { showDialog, dialogElement } = useStatusDialog();
 
   useEffect(() => {
@@ -33,20 +34,44 @@ export default function ProjectsEditor() {
     ]);
   };
 
-  const handleRemove = (index: number) => {
-    setProjects(projects.filter((_, i) => i !== index));
+  const handleRemove = async (index: number) => {
+    const project = projects[index];
+
+    if (!project) return;
+
+    if (!project.id) {
+      setProjects(projects.filter((_, i) => i !== index));
+      return;
+    }
+
+    setDeletingIndex(index);
+
+    try {
+      await resumeService.deleteProject(project.id, authService.getCredentials());
+      setProjects(projects.filter((_, i) => i !== index));
+      showDialog('success', 'Project Deleted', 'Project deleted successfully.');
+    } catch (error) {
+      console.error('Error deleting project', error);
+      showDialog('error', 'Project Delete Failed', error instanceof Error ? error.message : 'Unable to delete project.');
+    } finally {
+      setDeletingIndex(null);
+    }
   };
 
-  const handleSave = async () => {
-    setSaving(true);
+  const handleSave = async (index: number) => {
+    const project = projects[index];
+    if (!project) return;
+
+    setSavingIndex(index);
     try {
-      await resumeService.saveProjects(projects, authService.getCredentials());
+      const savedProject = await resumeService.saveProject(project, authService.getCredentials());
+      setProjects(projects.map((item, itemIndex) => (itemIndex === index ? savedProject : item)));
       showDialog('success', 'Projects Saved', 'Projects saved successfully.');
     } catch (error) {
       console.error('Error saving projects', error);
-      showDialog('error', 'Projects Save Failed', 'Check the /api/projects POST/PUT backend and credentials.');
+      showDialog('error', 'Projects Save Failed', error instanceof Error ? error.message : 'Check the /api/projects POST/PUT backend and credentials.');
     } finally {
-      setSaving(false);
+      setSavingIndex(null);
     }
   };
 
@@ -73,18 +98,14 @@ export default function ProjectsEditor() {
           <button onClick={handleAdd} className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl font-semibold transition-all">
             <Plus className="w-4 h-4" /> Add New
           </button>
-          <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-semibold shadow-md shadow-purple-500/20 transition-all disabled:opacity-50">
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            {saving ? 'Saving...' : 'Save Changes'}
-          </button>
         </div>
       </div>
 
       <div className="space-y-6">
         {projects.map((project, index) => (
           <div key={project.id || index} className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm relative">
-            <button onClick={() => handleRemove(index)} className="absolute top-6 right-6 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
-              <Trash2 className="w-5 h-5" />
+            <button onClick={() => handleRemove(index)} disabled={deletingIndex === index} className="absolute top-6 right-6 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50">
+              {deletingIndex === index ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
             </button>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pr-12">
@@ -111,6 +132,12 @@ export default function ProjectsEditor() {
               <div className="space-y-2 md:col-span-2">
                 <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Image URL</label>
                 <input type="text" value={project.imageUrl || ''} onChange={(e) => handleChange(index, 'imageUrl', e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all" />
+              </div>
+              <div className="md:col-span-2 flex justify-end">
+                <button onClick={() => handleSave(index)} disabled={savingIndex === index} className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-semibold shadow-md shadow-purple-500/20 transition-all disabled:opacity-50">
+                  {savingIndex === index ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                  {savingIndex === index ? 'Saving...' : project.id ? 'Update Project' : 'Create Project'}
+                </button>
               </div>
             </div>
           </div>

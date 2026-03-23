@@ -4,13 +4,10 @@ import type {
   Education,
   Experience,
   Profile,
-  ProfileAssetsPayload,
   Project,
   ResumeViewModel,
   Skill,
 } from '../types';
-
-type EntityKey = 'profile' | 'experience' | 'education' | 'skill' | 'project';
 
 const ensureCredentials = (auth: AuthCredentials) => {
   if (!auth.username || !auth.password) {
@@ -18,23 +15,15 @@ const ensureCredentials = (auth: AuthCredentials) => {
   }
 };
 
-const buildPayloadVariants = <T extends Record<string, unknown>>(
-  key: EntityKey,
-  entity: T,
-  auth: AuthCredentials
-) => [
-  { data: { ...auth, [key]: entity } },
-  { data: { ...auth, ...entity } },
-  {
-    data: entity,
-    config: {
-      headers: {
-        username: auth.username,
-        password: auth.password,
-      },
-    },
-  },
-];
+const adminHeaders = (auth: AuthCredentials) => ({
+  'X-Admin-Username': auth.username,
+  'X-Admin-Password': auth.password,
+});
+
+const stripId = <T extends { id?: number | string }>(entity: T): Omit<T, 'id'> => {
+  const { id: _id, ...rest } = entity;
+  return rest;
+};
 
 export const resumeService = {
   getResume: async (): Promise<ResumeViewModel> => {
@@ -50,11 +39,28 @@ export const resumeService = {
   saveProfile: async (profile: Profile, auth: AuthCredentials): Promise<Profile> => {
     ensureCredentials(auth);
     const payload = {
-      ...auth,
-      profile,
+      name: profile.name,
+      title: profile.title,
+      about: profile.about,
+      email: profile.email,
+      phone: profile.phone,
+      location: profile.location,
+      imageUrl: profile.imageUrl,
+      bannerUrl: profile.bannerUrl,
+      resumeUrl: profile.resumeUrl,
+      socialMediaLinks: profile.socialMediaLinks,
     };
-    const profileId = profile.id ?? 1;
-    const response = await api.put<Profile>(`/api/profile/${profileId}`, payload);
+
+    if (profile.id) {
+      const response = await api.put<Profile>(`/api/profile/${profile.id}`, payload, {
+        headers: adminHeaders(auth),
+      });
+      return response.data;
+    }
+
+    const response = await api.post<Profile>('/api/profile', payload, {
+      headers: adminHeaders(auth),
+    });
     return response.data;
   },
 
@@ -64,24 +70,21 @@ export const resumeService = {
     auth: AuthCredentials
   ): Promise<Profile> => {
     ensureCredentials(auth);
-    const payload: ProfileAssetsPayload = {
-      ...auth,
-      profile,
-    };
-    const response = await api.put<Profile>(`/api/profile/${profileId}`, payload);
+    const response = await api.put<Profile>(`/api/profile/${profileId}`, profile, {
+      headers: adminHeaders(auth),
+    });
     return response.data;
   },
 
   uploadProfileImage: async (profileId: number | string, file: File, auth: AuthCredentials) => {
     ensureCredentials(auth);
     const formData = new FormData();
-    formData.append('username', auth.username);
-    formData.append('password', auth.password);
     formData.append('file', file);
 
     const response = await api.post(`/api/profile/image/${profileId}`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
+        ...adminHeaders(auth),
       },
     });
 
@@ -90,7 +93,9 @@ export const resumeService = {
 
   deleteProfileImage: async (profileId: number | string, auth: AuthCredentials) => {
     ensureCredentials(auth);
-    await api.delete(`/api/profile/image/${profileId}`, { data: auth });
+    await api.delete(`/api/profile/image/${profileId}`, {
+      headers: adminHeaders(auth),
+    });
   },
 
   getExperiences: async () => {
@@ -114,123 +119,74 @@ export const resumeService = {
   },
 
   saveExperience: async (experience: Experience, auth: AuthCredentials) => {
-    return resumeService.saveEntity('/api/experience', 'experience', experience, auth);
+    return resumeService.saveEntity('/api/experience', experience, auth);
   },
 
   saveEducation: async (education: Education, auth: AuthCredentials) => {
-    return resumeService.saveEntity('/api/education', 'education', education, auth);
+    return resumeService.saveEntity('/api/education', education, auth);
   },
 
   saveSkill: async (skill: Skill, auth: AuthCredentials) => {
-    return resumeService.saveEntity('/api/skills', 'skill', skill, auth);
+    return resumeService.saveEntity('/api/skills', skill, auth);
   },
 
   saveProject: async (project: Project, auth: AuthCredentials) => {
-    return resumeService.saveEntity('/api/projects', 'project', project, auth);
-  },
-
-  saveExperiences: async (experiences: Experience[], auth: AuthCredentials) => {
-    return Promise.all(experiences.map((experience) => resumeService.saveExperience(experience, auth)));
-  },
-
-  saveEducations: async (educations: Education[], auth: AuthCredentials) => {
-    return Promise.all(educations.map((education) => resumeService.saveEducation(education, auth)));
-  },
-
-  saveSkills: async (skills: Skill[], auth: AuthCredentials) => {
-    return Promise.all(skills.map((skill) => resumeService.saveSkill(skill, auth)));
-  },
-
-  saveProjects: async (projects: Project[], auth: AuthCredentials) => {
-    return Promise.all(projects.map((project) => resumeService.saveProject(project, auth)));
+    return resumeService.saveEntity('/api/projects', project, auth);
   },
 
   saveEntity: async <T extends { id?: number | string }>(
     path: string,
-    key: EntityKey,
     entity: T,
     auth: AuthCredentials
   ): Promise<T> => {
     ensureCredentials(auth);
+    const payload = stripId(entity);
+
     if (entity.id) {
-      const variants = buildPayloadVariants(key, entity as Record<string, unknown>, auth);
-      let lastError: unknown;
-
-      for (const variant of variants) {
-        try {
-          const response = await api.put<T>(`${path}/${entity.id}`, variant.data, variant.config);
-          return response.data;
-        } catch (error) {
-          lastError = error;
-          const status = (error as { response?: { status?: number } })?.response?.status;
-
-          if (status !== 400 && status !== 403 && status !== 404) {
-            throw error;
-          }
-        }
-      }
-
-      const createVariants = buildPayloadVariants(key, entity as Record<string, unknown>, auth);
-
-      for (const variant of createVariants) {
-        try {
-          const response = await api.post<T>(path, variant.data, variant.config);
-          return response.data;
-        } catch (error) {
-          lastError = error;
-          const status = (error as { response?: { status?: number } })?.response?.status;
-
-          if (status !== 400 && status !== 403 && status !== 404) {
-            throw error;
-          }
-        }
-      }
-
-      throw lastError;
+      const response = await api.put<T>(`${path}/${entity.id}`, payload, {
+        headers: adminHeaders(auth),
+      });
+      return response.data;
     }
 
-    const variants = buildPayloadVariants(key, entity as Record<string, unknown>, auth);
-    let lastError: unknown;
-
-    for (const variant of variants) {
-      try {
-        const response = await api.post<T>(path, variant.data, variant.config);
-        return response.data;
-      } catch (error) {
-        lastError = error;
-        const status = (error as { response?: { status?: number } })?.response?.status;
-
-        if (status !== 400 && status !== 403) {
-          throw error;
-        }
-      }
-    }
-
-    throw lastError;
+    const response = await api.post<T>(path, payload, {
+      headers: adminHeaders(auth),
+    });
+    return response.data;
   },
 
   deleteExperience: async (id: number | string, auth: AuthCredentials) => {
     ensureCredentials(auth);
-    await api.delete(`/api/experience/${id}`, { data: auth });
+    await api.delete(`/api/experience/${id}`, {
+      headers: adminHeaders(auth),
+    });
   },
 
   deleteEducation: async (id: number | string, auth: AuthCredentials) => {
     ensureCredentials(auth);
-    await api.delete(`/api/education/${id}`, { data: auth });
+    await api.delete(`/api/education/${id}`, {
+      headers: adminHeaders(auth),
+    });
   },
 
   deleteSkill: async (id: number | string, auth: AuthCredentials) => {
     ensureCredentials(auth);
-    await api.delete(`/api/skills/${id}`, { data: auth });
+    await api.delete(`/api/skills/${id}`, {
+      headers: adminHeaders(auth),
+    });
   },
 
   deleteProject: async (id: number | string, auth: AuthCredentials) => {
     ensureCredentials(auth);
-    await api.delete(`/api/projects/${id}`, { data: auth });
+    await api.delete(`/api/projects/${id}`, {
+      headers: adminHeaders(auth),
+    });
   },
 
   deleteSocialLink: async (id: number | string, auth: AuthCredentials) => {
     ensureCredentials(auth);
-    await api.delete(`/api/profile/social/${id}`, { data: auth });
+    await api.delete(`/api/profile/social/${id}`, {
+      headers: adminHeaders(auth),
+    });
   },
 };

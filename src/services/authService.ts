@@ -8,16 +8,22 @@ const EMPTY_CREDENTIALS: AuthCredentials = {
   password: '',
 };
 
+const normalizeCredentials = (credentials: AuthCredentials): AuthCredentials => ({
+  username: credentials.username.trim(),
+  password: credentials.password.trim(),
+});
+
 export const authService = {
   login: async (username: string, password: string): Promise<unknown> => {
-    const response = await api.post('/api/auth/login', { username, password });
+    const normalized = normalizeCredentials({ username, password });
+    const response = await api.post('/api/auth/login', normalized);
     localStorage.setItem(AUTH_FLAG_KEY, 'true');
-    localStorage.setItem(AUTH_CREDENTIALS_KEY, JSON.stringify({ username, password }));
+    localStorage.setItem(AUTH_CREDENTIALS_KEY, JSON.stringify(normalized));
     return response.data;
   },
 
   register: async (username: string, password: string): Promise<unknown> => {
-    const response = await api.post('/api/auth/register', { username, password });
+    const response = await api.post('/api/auth/register', normalizeCredentials({ username, password }));
     return response.data;
   },
 
@@ -39,7 +45,7 @@ export const authService = {
     }
 
     try {
-      return JSON.parse(raw) as AuthCredentials;
+      return normalizeCredentials(JSON.parse(raw) as AuthCredentials);
     } catch {
       return EMPTY_CREDENTIALS;
     }
@@ -52,6 +58,9 @@ export const authService = {
 
   setDevelopmentSession: (username = '', password = '') => {
     localStorage.setItem(AUTH_FLAG_KEY, 'true');
-    localStorage.setItem(AUTH_CREDENTIALS_KEY, JSON.stringify({ username, password }));
+    localStorage.setItem(
+      AUTH_CREDENTIALS_KEY,
+      JSON.stringify(normalizeCredentials({ username, password }))
+    );
   },
 };
