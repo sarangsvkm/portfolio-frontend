@@ -21,7 +21,8 @@ const adminHeaders = (auth: AuthCredentials) => ({
 });
 
 const stripId = <T extends { id?: number | string }>(entity: T): Omit<T, 'id'> => {
-  const { id: _id, ...rest } = entity;
+  const rest = { ...entity };
+  delete rest.id;
   return rest;
 };
 

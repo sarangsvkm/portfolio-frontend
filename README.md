@@ -1,222 +1,103 @@
-# Portfolio Frontend
+# 🚀 Premium Portfolio Ecosystem
 
-A professional portfolio frontend built with React, TypeScript, Vite, and Tailwind CSS, paired with a Spring Boot backend. The application includes a public-facing portfolio experience and an admin CMS for managing profile content, experience, education, skills, and projects.
+![Redesign Preview](https://img.shields.io/badge/Design-World--Class-blueviolet?style=for-the-badge)
+![Security](https://img.shields.io/badge/Security-OTP--Verified-emerald?style=for-the-badge)
+![Tech Stack](https://img.shields.io/badge/Stack-React%2019%20%7C%20Tailwind%204-61dafb?style=for-the-badge)
 
-## Highlights
+A state-of-the-art, professional portfolio ecosystem designed for high-impact personal branding. Built with a **Pure Black** aesthetic, **Glassmorphism**, and **Advanced Framer Motion** orchestration, this platform offers a seamless bridge between a world-class public showcase and a robust Admin CMS.
 
-- Modern public portfolio experience built with React and TypeScript
-- Dedicated admin CMS for profile, experience, education, skills, and project management
-- API-integrated architecture aligned with the included Postman collection
-- Responsive UI with animated public sections and structured admin workflows
-- Clean local development flow with Vite proxy support for Spring Boot APIs
+---
 
-## Overview
+## ✨ World-Class Features
 
-This project is designed as a portfolio management interface with two primary surfaces:
+### 🌌 Elite Public Experience
+- **Ambient Aura Design**: A futuristic "Pure Black" theme featuring indigo-purple aura glows and deep multi-layered shadows.
+- **Morphing Pill Navigation**: A dynamic, glassmorphic floating navbar that adapts and morphs on scroll.
+- **Micro-Interaction Engine**: Hardware-accelerated animations (staggered reveals, magnetic hover effects, and parallax depth).
+- **Infinite Sections**: Integrated About, Skills (category-grouped), Experience, Education (vertical timeline), and Projects.
 
-- Public portfolio pages for showcasing professional information
-- Admin CMS pages for updating portfolio content through backend APIs
+### 🛡️ Ironclad Security
+- **OTP Verification Gate**: Sensitive contact details (Email, Phone) and the ATS-Optimized Resume are protected behind a secure One-Time Password verification layer.
+- **Admin Hub Security**: The administrative suite is protected via an obfuscated entry path and strict JWT-based session management.
 
-The frontend is integrated with a backend API collection that exposes:
+### ✍️ Advanced Resume Systems
+- **Web-based ATS View**: A clean, printable, and high-contrast professional resume view.
+- **LaTeX Generator**: Integrated capability to generate and download industry-standard LaTeX-based resumes directly from data.
 
-- authentication endpoints
-- profile and asset management
-- full resume retrieval
-- standalone content endpoints for experience, education, skills, and projects
-- contact reporting and system configuration
+---
 
-## Features
+## 🛠️ Cutting-Edge Tech Stack
 
-- Public portfolio landing page with profile, skills, projects, experience, and education sections
-- Admin dashboard with section-based content management
-- Separate editors for:
-  - Profile
-  - Experience
-  - Education
-  - Skills
-  - Projects
-- Styled centered success/error popup dialogs for admin actions
-- Profile asset handling for image, banner, and resume URLs
-- API-ready service layer using Axios
-- Vite proxy configuration for local backend development
+| Layer | Technologies |
+|--- |--- |
+| **Foundation** | React 19 (Latest), TypeScript, Vite |
+| **Styling** | Tailwind CSS 4, Vanilla CSS (Design Tokens), Glassmorphism |
+| **Animation** | Framer Motion (Orchestration), Lucide React |
+| **Integration** | Axios (Intercepted), RESTful Services |
+| **Backend** | Spring Boot (Secure Core), PostgreSQL |
 
-## Tech Stack
+---
 
-- React 19
-- TypeScript
-- Vite
-- Tailwind CSS 4
-- React Router
-- Axios
-- Framer Motion
-- Lucide React
-
-## Project Structure
+## 📂 Project Architecture
 
 ```text
 src/
-  layouts/
-    PublicLayout.tsx
-    AdminLayout.tsx
-  pages/
-    public/
-      Home.tsx
-    admin/
-      Dashboard.tsx
-      Login.tsx
-      ProfileEditor.tsx
-      ExperienceEditor.tsx
-      EducationEditor.tsx
-      SkillsEditor.tsx
-      ProjectsEditor.tsx
-  services/
-    api.ts
-    authService.ts
-    resumeService.ts
-    contactService.ts
-    configService.ts
-  types/
-    index.ts
-  utils/
-    resume.ts
-  hooks/
-    useStatusDialog.tsx
+  ├── components/      # Glassmorphic & Verification UI components
+  ├── layouts/         # Floating Navbar & Admin Sidebar layouts
+  ├── pages/
+  │   ├── public/      # Premium Home & Resume views
+  │   └── admin/       # Robust CRUD editors for all sections
+  ├── services/        # Logic-heavy API integration layer
+  ├── hooks/           # Theme, Auth, and Interaction hooks
+  └── utils/           # Asset resolution & Resume normalization
 ```
 
-## Routing
+---
 
-The application is split into public and admin routes:
+## 🚀 Getting Started
 
-- `/` : Public portfolio
-- `/admin/login` : Admin authentication
-- `/admin` : Admin dashboard
-- `/admin/profile` : Profile editor
-- `/admin/experience` : Experience editor
-- `/admin/education` : Education editor
-- `/admin/skills` : Skills editor
-- `/admin/projects` : Projects editor
+### 1. Requirements
+Ensure you have **Node.js 18+** and the **Spring Boot Portfolio API** running.
 
-## API Integration
-
-The frontend is aligned with the included Postman collection:
-
-- `src/portfolio-api-postman-collection.json`
-
-Primary API groups:
-
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `GET /api/profile`
-- `PUT /api/profile/{id}`
-- `POST /api/profile/image/{id}`
-- `GET /api/resume`
-- `GET /api/experience`
-- `GET /api/education`
-- `GET /api/skills`
-- `GET /api/projects`
-- `GET /api/contact/report`
-- `GET /api/config`
-
-Current implementation uses:
-
-- `GET /api/resume` for public portfolio rendering
-- section-based APIs for admin management of experience, education, skills, and projects
-- profile APIs for profile and asset updates
-
-## Environment Configuration
-
-Create or update `.env` with:
-
-```env
-VITE_API_BASE_URL=/portfolioApi
-```
-
-This works with the Vite development proxy configured in `vite.config.ts`:
-
-- `/portfolioApi` -> `http://localhost:8080`
-
-## Getting Started
-
-### 1. Install dependencies
-
+### 2. Installation
 ```bash
 npm install
 ```
 
-### 2. Start the development server
+### 3. Environment Setup
+Create a `.env` file in the root:
+```env
+VITE_API_BASE_URL=http://localhost:8082
+```
 
+### 4. Launch Development
 ```bash
 npm run dev
 ```
 
-### 3. Start the backend
+---
 
-Run the Spring Boot backend separately on:
+## 🏗️ Production Workflow
 
-```text
-http://localhost:8080
-```
-
-## Available Scripts
-
-```bash
-npm run dev
-```
-
-Starts the Vite development server.
-
+To build the optimized, world-class bundle:
 ```bash
 npm run build
 ```
 
-Runs TypeScript build checks and creates a production build.
-
-```bash
-npm run preview
-```
-
-Previews the production build locally.
-
+Verify the build quality:
 ```bash
 npm run lint
 ```
 
-Runs ESLint for the project.
+---
 
-## Admin Workflow
+## 🤝 Repository & Socials
 
-1. Log in through `/admin/login`
-2. Open the relevant content editor
-3. Update the form fields
-4. Save changes through the connected backend endpoint
-5. Use the live preview action from the admin layout to verify the public portfolio
+- **GitHub**: [sarangsvkm/portfolio-frontend](https://github.com/sarangsvkm/portfolio-frontend)
+- **Portfolio**: [sarangsvkm.in](https://sarangsvkm.in)
 
-## Current Notes
+---
 
-- Public content gracefully falls back to local sample data when the backend is unavailable
-- Admin save actions rely on valid backend credentials
-- Section editors are implemented with separate service methods for each content type
-- Styled modal dialogs are used for save and error feedback instead of browser alerts
+## 📜 License
 
-## Known Considerations
-
-- Full production build may depend on the local Windows/Tailwind native module environment
-- If backend endpoints reject save requests, verify:
-  - backend credentials
-  - expected POST/PUT request body shape
-  - proxy configuration
-  - CORS or authentication rules on the backend
-
-## Repository
-
-GitHub repository:
-
-```text
-https://github.com/sarangsvkm/portfolio-frontend
-```
-
-## License
-
-This project is licensed under the MIT License.
-
-See the [LICENSE](./LICENSE) file for full details.
+Created with precision by **Sarang S**. This project is licensed under the MIT License.

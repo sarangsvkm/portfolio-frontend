@@ -1,33 +1,42 @@
 import api from './api';
-import type { SystemConfig } from '../types';
+import type { AuthCredentials, SystemConfig } from '../types';
+
+const adminHeaders = (auth: AuthCredentials) => ({
+  'X-Admin-Username': auth.username,
+  'X-Admin-Password': auth.password,
+});
 
 export const configService = {
-  getConfigs: async (auth: { username: string, password: string }): Promise<SystemConfig[]> => {
+  getConfigs: async (auth: AuthCredentials): Promise<SystemConfig[]> => {
     const response = await api.get<SystemConfig[]>('/api/config', {
-      headers: {
-        'username': auth.username,
-        'password': auth.password
-      }
+      headers: adminHeaders(auth),
     });
     return response.data;
   },
 
-  saveConfig: async (config: SystemConfig, auth: { username: string, password: string }): Promise<SystemConfig> => {
+  saveConfig: async (config: SystemConfig, auth: AuthCredentials): Promise<SystemConfig> => {
     const response = await api.post<SystemConfig>('/api/config', config, {
-      headers: {
-        'username': auth.username,
-        'password': auth.password
-      }
+      headers: adminHeaders(auth),
     });
     return response.data;
   },
 
-  deleteConfig: async (id: number | string, auth: { username: string, password: string }) => {
+  deleteConfig: async (id: number | string, auth: AuthCredentials) => {
     await api.delete(`/api/config/${id}`, {
-      headers: {
-        'username': auth.username,
-        'password': auth.password
-      }
+      headers: adminHeaders(auth),
     });
-  }
+  },
+
+  uploadAsset: async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await api.post<string>('/api/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    return response.data;
+  },
 };

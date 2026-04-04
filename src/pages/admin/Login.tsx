@@ -22,6 +22,7 @@ export default function Login() {
     } catch (err) {
       console.error('Login failed via API.', err);
       if (axios.isAxiosError(err) && err.response) {
+        console.error('Backend error response:', err.response.data);
         setError('Invalid username or password. Please use valid backend credentials.');
       } else {
         authService.setDevelopmentSession(username, password);

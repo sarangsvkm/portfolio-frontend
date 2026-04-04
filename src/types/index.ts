@@ -9,6 +9,13 @@ export interface AuthCredentials {
   password: string;
 }
 
+export interface UploadedAsset {
+  id?: number | string;
+  name?: string;
+  type?: string;
+  data?: string;
+}
+
 export interface Profile {
   id?: number | string;
   name: string;
@@ -20,13 +27,16 @@ export interface Profile {
   imageUrl?: string;
   bannerUrl?: string;
   resumeUrl?: string;
+  profileImage?: UploadedAsset | null;
+  bannerImage?: UploadedAsset | null;
   socialMediaLinks: SocialMediaLink[];
 }
 
 export interface Skill {
   id?: number | string;
   name: string;
-  level: string; // Updated from 'category' to 'level' as per Postman
+  level: string;
+  category?: string;
 }
 
 export interface Project {
@@ -96,6 +106,8 @@ export interface ContactRequest {
   message?: string;
   verified?: boolean;
   createdAt?: string;
+  date?: string;
+  time?: string;
 }
 
 export interface SystemConfig {

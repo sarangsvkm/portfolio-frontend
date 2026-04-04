@@ -11,7 +11,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/portfolioApi': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:8082',
         changeOrigin: true,
       }
     }

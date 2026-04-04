@@ -1,5 +1,5 @@
 import { Outlet, Navigate, NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, User, Briefcase, GraduationCap, FolderGit2, LogOut, ExternalLink } from 'lucide-react';
+import { LayoutDashboard, User, Briefcase, GraduationCap, FolderGit2, LogOut, ExternalLink, Sparkles, Image, FileText } from 'lucide-react';
 import { authService } from '../services/authService';
 
 export default function AdminLayout() {
@@ -7,20 +7,23 @@ export default function AdminLayout() {
   const isAuthenticated = authService.isAuthenticated();
 
   if (!isAuthenticated) {
-    return <Navigate to="/admin/login" replace />;
+    return <Navigate to="/srg-gate" replace />;
   }
 
   const navItems = [
     { name: 'Dashboard', path: '/admin', icon: LayoutDashboard },
     { name: 'Profile', path: '/admin/profile', icon: User },
+    { name: 'Images', path: '/admin/images', icon: Image },
     { name: 'Experience', path: '/admin/experience', icon: Briefcase },
     { name: 'Education', path: '/admin/education', icon: GraduationCap },
     { name: 'Projects', path: '/admin/projects', icon: FolderGit2 },
+    { name: 'Skills', path: '/admin/skills', icon: Sparkles },
+    { name: 'Resume Builder', path: '/admin/builder', icon: FileText },
   ];
 
   const handleLogout = () => {
     authService.logout();
-    navigate('/admin/login');
+    navigate('/srg-gate');
   };
 
   const handlePreview = () => {
@@ -61,7 +64,7 @@ export default function AdminLayout() {
       </aside>
       
       <main className="flex-1 flex flex-col h-screen overflow-hidden">
-        <header className="h-20 bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 flex items-center px-8 justify-between shrink-0 shadow-sm transition-colors duration-300">
+        <header className="sticky top-0 z-20 h-20 bg-white/95 dark:bg-gray-950/95 backdrop-blur border-b border-gray-200 dark:border-gray-800 flex items-center px-8 justify-between shrink-0 shadow-sm transition-colors duration-300">
            <h1 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Admin Dashboard</h1>
            <div className="flex items-center gap-4">
              <button
@@ -74,7 +77,7 @@ export default function AdminLayout() {
              </button>
            </div>
         </header>
-        <div className="flex-1 overflow-auto p-8 bg-gray-50/50 dark:bg-gray-900">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-8 bg-gray-50/50 dark:bg-gray-900">
           <Outlet />
         </div>
       </main>
