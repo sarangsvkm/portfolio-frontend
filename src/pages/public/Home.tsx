@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react';
 import { motion, type Variants } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
-  Github,
-  Linkedin,
   Mail,
   ExternalLink,
   Briefcase,
@@ -23,6 +21,7 @@ import { createFallbackResume, normalizeResume } from '../../utils/resume';
 import { resolveAssetUrl } from '../../utils/assetUrl';
 import VerificationGate from '../../components/public/VerificationGate';
 import { getVerifiedContact, type VerifiedContact } from '../../components/public/verificationStorage';
+import { getSocialIcon } from '../../utils/socialIcons';
 
 const PUBLIC_RESUME_CACHE_KEY = 'public_resume_cache';
 
@@ -124,7 +123,7 @@ export default function Home() {
         <div className="absolute top-1/4 left-1/4 -z-10 h-96 w-96 bg-purple-500/10 blur-[150px] animate-pulse" />
         <div className="absolute bottom-1/4 right-1/4 -z-10 h-72 w-72 bg-blue-500/10 blur-[120px] animate-pulse delay-700" />
         
-        <div className="container mx-auto max-w-6xl">
+        <div className="container mx-auto max-w-screen-2xl">
           <div className="flex flex-col items-center gap-16 text-center lg:flex-row lg:text-left lg:items-center">
             
             <motion.div 
@@ -138,8 +137,8 @@ export default function Home() {
               </div>
               
               <div className="space-y-4">
-                <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.85] text-gray-950 dark:text-white">
-                  I'm <span className="text-gradient drop-shadow-xl">{profile.name}</span>
+                <h1 className="text-6xl md:text-8xl xl:text-9xl 3xl:text-[12rem] font-black tracking-tighter leading-[0.85] text-gray-950 dark:text-white">
+                  I'm <span className="text-gradient drop-shadow-2xl">{profile.name}</span>
                 </h1>
                 <p className="text-xl md:text-2xl text-gray-500 dark:text-gray-400 font-medium leading-relaxed max-w-2xl mx-auto lg:mx-0">
                   {profile.about}
@@ -167,18 +166,21 @@ export default function Home() {
                 )}
                 
                 <div className="flex gap-4">
-                  {profile.socialMediaLinks.map((link, i) => (
-                    <motion.a
-                      key={i}
-                      href={link.url}
-                      whileHover={{ y: -5, scale: 1.1 }}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="p-4 rounded-2xl glass hover:border-indigo-500/50 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-xl"
-                    >
-                      {link.platform.toLowerCase().includes('github') ? <Github size={24} /> : <Linkedin size={24} />}
-                    </motion.a>
-                  ))}
+                  {profile.socialMediaLinks.map((link, i) => {
+                    const IconComponent = getSocialIcon(link.platform);
+                    return (
+                      <motion.a
+                        key={i}
+                        href={link.url}
+                        whileHover={{ y: -5, scale: 1.1 }}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="p-4 rounded-2xl glass hover:border-indigo-500/50 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-xl"
+                      >
+                        <IconComponent size={24} />
+                      </motion.a>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -212,8 +214,8 @@ export default function Home() {
       </section>
 
       {/* Modern Journey Section */}
-      <section id="experience" className="relative py-32 overflow-hidden">
-        <div className="section-padding container mx-auto">
+      <section id="experience" className="relative py-40 overflow-hidden">
+        <div className="section-padding">
           <motion.div 
             initial="hidden"
             whileInView="visible"
@@ -264,8 +266,8 @@ export default function Home() {
       </section>
 
       {/* Advanced Skills Section */}
-      <section id="skills" className="relative py-32 overflow-hidden bg-gray-50/50 dark:bg-white/[0.01]">
-        <div className="section-padding container mx-auto">
+      <section id="skills" className="relative py-40 overflow-hidden bg-gray-50/50 dark:bg-white/[0.01]">
+        <div className="section-padding">
           <motion.div 
             initial="hidden"
             whileInView="visible"
@@ -316,8 +318,8 @@ export default function Home() {
       </section>
 
       {/* Featured Projects Overhaul */}
-      <section id="projects" className="relative py-32">
-        <div className="section-padding container mx-auto">
+      <section id="projects" className="relative py-40">
+        <div className="section-padding">
           <motion.div 
             initial="hidden"
             whileInView="visible"
@@ -378,14 +380,14 @@ export default function Home() {
       </section>
 
       {/* World-Class Education Section */}
-      <section id="education" className="relative py-32 overflow-hidden bg-gray-50/50 dark:bg-white/[0.01]">
-        <div className="section-padding container mx-auto">
+      <section id="education" className="relative py-40 overflow-hidden bg-gray-50/50 dark:bg-white/[0.01]">
+        <div className="section-padding">
           <motion.div 
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
             variants={containerVariants}
-            className="grid lg:grid-cols-3 gap-16 items-start"
+            className="grid lg:grid-cols-[1.5fr_3fr] gap-20 items-start"
           >
              <div className="lg:col-span-1 space-y-6">
                 <motion.h2 variants={itemVariants} className="text-5xl md:text-6xl font-black tracking-tighter uppercase leading-none">Education</motion.h2>

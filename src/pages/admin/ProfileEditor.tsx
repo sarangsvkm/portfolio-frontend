@@ -5,6 +5,7 @@ import { authService } from '../../services/authService';
 import type { Profile } from '../../types';
 import { createFallbackResume } from '../../utils/resume';
 import { useStatusDialog } from '../../hooks/useStatusDialog';
+import { SOCIAL_PLATFORMS, getSocialIcon } from '../../utils/socialIcons';
 
 const PUBLIC_RESUME_CACHE_KEY = 'public_resume_cache';
 
@@ -166,27 +167,38 @@ export default function ProfileEditor() {
             </div>
 
             <div className="space-y-4">
-              {profile.socialMediaLinks.map((link, index) => (
-                <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border border-gray-100 dark:border-gray-800 rounded-xl">
-                  <input
-                    type="text"
-                    value={link.platform}
-                    onChange={(e) => handleSocialChange(index, 'platform', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 dark:text-white outline-none"
-                    placeholder="Platform"
-                  />
-                  <input
-                    type="url"
-                    value={link.url}
-                    onChange={(e) => handleSocialChange(index, 'url', e.target.value)}
-                    className="md:col-span-2 w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 dark:text-white outline-none"
-                    placeholder="https://..."
-                  />
-                  <button onClick={() => removeSocialLink(index)} className="md:col-span-3 justify-self-start text-sm text-red-500 hover:text-red-600">
-                    Remove Link
-                  </button>
-                </div>
-              ))}
+              {profile.socialMediaLinks.map((link, index) => {
+                const IconComponent = getSocialIcon(link.platform || 'other');
+                return (
+                  <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 border border-gray-100 dark:border-gray-800 rounded-xl items-center">
+                    <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2">
+                       <IconComponent className="text-purple-600 dark:text-purple-400 w-5 h-5 shrink-0" />
+                       <select
+                         value={link.platform.toLowerCase()}
+                         onChange={(e) => handleSocialChange(index, 'platform', e.target.value)}
+                         className="w-full bg-transparent dark:text-white outline-none text-sm font-semibold cursor-pointer"
+                       >
+                         <option value="" disabled>Select Platform</option>
+                         {SOCIAL_PLATFORMS.map(p => (
+                           <option key={p.id} value={p.id}>{p.name}</option>
+                         ))}
+                       </select>
+                    </div>
+                    <input
+                      type="url"
+                      value={link.url}
+                      onChange={(e) => handleSocialChange(index, 'url', e.target.value)}
+                      className="md:col-span-2 w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 dark:text-white outline-none"
+                      placeholder="https://..."
+                    />
+                    <div className="flex justify-between items-center md:col-span-1">
+                      <button onClick={() => removeSocialLink(index)} className="text-sm text-red-500 hover:text-red-600 font-medium">
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

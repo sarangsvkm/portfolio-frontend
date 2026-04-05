@@ -19,6 +19,7 @@ export default function AdminLayout() {
     { name: 'Projects', path: '/admin/projects', icon: FolderGit2 },
     { name: 'Skills', path: '/admin/skills', icon: Sparkles },
     { name: 'Resume Builder', path: '/admin/builder', icon: FileText },
+    { name: 'Device Preview', path: '/admin/preview', icon: LayoutDashboard },
   ];
 
   const handleLogout = () => {

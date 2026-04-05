@@ -89,7 +89,7 @@ export default function ImageSettings() {
       await resumeService.uploadProfileImage(savedProfile.id ?? 1, file, auth);
       setProfile({
         ...savedProfile,
-        imageUrl: `/api/profile/image/${savedProfile.id ?? 1}`,
+        imageUrl: `/portfolioApi/api/profile/image/${savedProfile.id ?? 1}`,
       });
       showDialog('success', 'Image Uploaded', 'Profile image uploaded successfully.');
     } catch (error) {
@@ -370,19 +370,19 @@ export default function ImageSettings() {
             <div className="space-y-4 pt-2 border-t border-gray-100 dark:border-gray-800">
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Image URL</label>
-                <input type="text" name="imageUrl" value={profile.imageUrl || ''} onChange={handleAssetFieldChange} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all" placeholder="/api/profile/image/1" />
+                <input type="text" name="imageUrl" value={profile.imageUrl || ''} onChange={handleAssetFieldChange} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all" placeholder="/portfolioApi/api/profile/image/1" />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Banner URL</label>
-                <input type="text" name="bannerUrl" value={profile.bannerUrl || ''} onChange={handleAssetFieldChange} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all" placeholder="/api/upload/view/banner.jpg" />
+                <input type="text" name="bannerUrl" value={profile.bannerUrl || ''} onChange={handleAssetFieldChange} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all" placeholder="/portfolioApi/api/upload/view/banner.jpg" />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Resume URL With Image</label>
-                <input type="text" name="resumeUrl" value={profile.resumeUrl || ''} onChange={handleAssetFieldChange} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all" placeholder="/api/upload/view/resume-with-image.pdf" />
+                <input type="text" name="resumeUrl" value={profile.resumeUrl || ''} onChange={handleAssetFieldChange} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all" placeholder="/portfolioApi/api/upload/view/resume-with-image.pdf" />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Resume URL Without Image</label>
-                <input type="text" value={resumeWithoutImageUrl} onChange={(e) => setResumeWithoutImageUrl(e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all" placeholder="/api/upload/view/resume-without-image.pdf" />
+                <input type="text" value={resumeWithoutImageUrl} onChange={(e) => setResumeWithoutImageUrl(e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all" placeholder="/portfolioApi/api/upload/view/resume-without-image.pdf" />
               </div>
               <label className="flex items-start gap-3 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-4 text-sm text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300">
                 <input
@@ -430,7 +430,7 @@ export default function ImageSettings() {
 
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Logo Image URL</label>
-              <input type="text" value={logoImageUrl} onChange={(e) => setLogoImageUrl(e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all" placeholder="/api/upload/view/logo.png" />
+              <input type="text" value={logoImageUrl} onChange={(e) => setLogoImageUrl(e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all" placeholder="/portfolioApi/api/upload/view/logo.png" />
             </div>
 
             <div className="flex flex-col gap-3">
@@ -480,7 +480,7 @@ export default function ImageSettings() {
 
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Resume Image URL</label>
-              <input type="text" value={resumeImageUrl} onChange={(e) => setResumeImageUrl(e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all" placeholder="/api/upload/view/resume-photo.jpg" />
+              <input type="text" value={resumeImageUrl} onChange={(e) => setResumeImageUrl(e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all" placeholder="/portfolioApi/api/upload/view/resume-photo.jpg" />
             </div>
 
             <div className="flex flex-col gap-3">

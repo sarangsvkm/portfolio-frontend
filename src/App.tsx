@@ -14,6 +14,7 @@ const SkillsEditor = lazy(() => import('./pages/admin/SkillsEditor'));
 const ProjectsEditor = lazy(() => import('./pages/admin/ProjectsEditor'));
 const ImageSettings = lazy(() => import('./pages/admin/ImageSettings'));
 const ResumeBuilder = lazy(() => import('./pages/admin/ResumeBuilder'));
+const DevicePreview = lazy(() => import('./pages/admin/DevicePreview'));
 const Login = lazy(() => import('./pages/admin/Login'));
 
 function RouteFallback() {
@@ -52,6 +53,7 @@ function App() {
             <Route path="skills" element={<SkillsEditor />} />
             <Route path="images" element={<ImageSettings />} />
             <Route path="builder" element={<ResumeBuilder />} />
+            <Route path="preview" element={<DevicePreview />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />
