@@ -75,7 +75,7 @@ export default function VerificationGate({ featureLabel, onVerified }: Verificat
     setMessage('');
 
     try {
-      await contactService.verifyOtp({
+      const response = await contactService.verifyOtp({
         email: form.email.trim(),
         otp: otp.trim(),
       });
@@ -85,6 +85,8 @@ export default function VerificationGate({ featureLabel, onVerified }: Verificat
         email: form.email.trim(),
         phone: form.phone.trim(),
         verifiedAt: new Date().toISOString(),
+        ownerPhone: response.phone,
+        ownerResumeUrl: response.resumeUrl,
       };
 
       clearPendingContact();

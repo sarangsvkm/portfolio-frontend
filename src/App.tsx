@@ -2,7 +2,8 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import PublicLayout from './layouts/PublicLayout';
 import AdminLayout from './layouts/AdminLayout';
-import ProtectedRoute from './components/admin/ProtectedRoute';
+import AdminProtectedRoute from './components/admin/AdminProtectedRoute';
+import OtpGate from './components/public/OtpGate';
 
 const PublicHome = lazy(() => import('./pages/public/Home'));
 const ResumePage = lazy(() => import('./pages/public/Resume'));
@@ -32,7 +33,11 @@ function App() {
         <Routes>
           <Route path="/" element={<PublicLayout />}>
             <Route index element={<PublicHome />} />
-            <Route path="resume" element={<ResumePage />} />
+            <Route path="resume" element={
+              <OtpGate featureLabel="ATS-optimized resume and contact details">
+                <ResumePage />
+              </OtpGate>
+            } />
           </Route>
 
           <Route path="/srg-gate" element={<Login />} />
@@ -40,9 +45,9 @@ function App() {
           <Route
             path="/admin"
             element={
-              <ProtectedRoute>
+              <AdminProtectedRoute>
                 <AdminLayout />
-              </ProtectedRoute>
+              </AdminProtectedRoute>
             }
           >
             <Route index element={<AdminDashboard />} />

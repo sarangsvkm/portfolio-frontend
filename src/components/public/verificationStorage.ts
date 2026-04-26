@@ -5,7 +5,11 @@ const PUBLIC_CONTACT_PENDING_KEY = 'public_contact_pending';
 
 export interface VerifiedContact extends OtpRequest {
   verifiedAt: string;
+  ownerPhone?: string;
+  ownerResumeUrl?: string;
 }
+
+const SESSION_EXPIRY_MS = 60 * 60 * 1000; // 1 Hour
 
 export function getVerifiedContact(): VerifiedContact | null {
   if (typeof window === 'undefined') {
@@ -19,7 +23,18 @@ export function getVerifiedContact(): VerifiedContact | null {
   }
 
   try {
-    return JSON.parse(raw) as VerifiedContact;
+    const contact = JSON.parse(raw) as VerifiedContact;
+    
+    // 🕒 AUTO-LOCK: Check if session has expired
+    const verifiedAt = new Date(contact.verifiedAt).getTime();
+    const now = new Date().getTime();
+    
+    if (now - verifiedAt > SESSION_EXPIRY_MS) {
+      localStorage.removeItem(PUBLIC_CONTACT_VERIFIED_KEY);
+      return null;
+    }
+    
+    return contact;
   } catch {
     localStorage.removeItem(PUBLIC_CONTACT_VERIFIED_KEY);
     return null;

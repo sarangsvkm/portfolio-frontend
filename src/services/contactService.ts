@@ -1,5 +1,5 @@
 import api, { publicApi } from './api';
-import type { OtpRequest, OtpVerification, ContactRequest, AuthCredentials } from '../types';
+import type { OtpRequest, OtpVerification, OtpVerificationResponse, ContactRequest, AuthCredentials } from '../types';
 
 const adminHeaders = (auth: AuthCredentials) => ({
   'X-Admin-Username': auth.username,
@@ -12,8 +12,8 @@ export const contactService = {
     return response.data;
   },
 
-  verifyOtp: async (data: OtpVerification) => {
-    const response = await publicApi.post('/api/contact/verify-otp', data);
+  verifyOtp: async (data: OtpVerification): Promise<OtpVerificationResponse> => {
+    const response = await publicApi.post<OtpVerificationResponse>('/api/contact/verify-otp', data);
     return response.data;
   },
 

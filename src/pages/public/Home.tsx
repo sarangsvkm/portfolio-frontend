@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, type Variants } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   Mail,
   ExternalLink,
@@ -9,6 +9,7 @@ import {
   FileText,
   Phone,
   Sparkles,
+  ShieldCheck,
   ArrowRight,
   Code2,
   Terminal,
@@ -61,7 +62,17 @@ export default function Home() {
   });
   const [loading, setLoading] = useState(() => data === null);
   const [verifiedContact, setVerifiedContact] = useState<VerifiedContact | null>(() => getVerifiedContact());
+  const location = useLocation();
   const [showPhoneVerification, setShowPhoneVerification] = useState(false);
+
+  useEffect(() => {
+    if (location.state?.requireVerify) {
+      setShowPhoneVerification(true);
+      // Optional: scroll to the verification section
+      const gate = document.getElementById('verification-gate');
+      if (gate) gate.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [location.state]);
 
   useEffect(() => {
     let isMounted = true;
@@ -104,7 +115,9 @@ export default function Home() {
 
   const { profile, projects, experiences, educations, skills } = data;
   const profileImageUrl = resolveAssetUrl(profile.imageUrl);
-  const resumeUrl = resolveAssetUrl(profile.resumeUrl);
+  const rawResumeUrl = verifiedContact?.ownerResumeUrl || profile.resumeUrl;
+  const resumeUrl = resolveAssetUrl(rawResumeUrl);
+  const displayPhone = verifiedContact?.ownerPhone || profile.phone;
 
   const skillGroups = skills.reduce((acc: Record<string, typeof skills>, skill) => {
     const cat = skill.category || 'General';
@@ -432,44 +445,63 @@ export default function Home() {
                 Inspired to Build <br /> Something <span className="text-indigo-600">Legendary?</span>
               </h2>
               
-              <div className="flex flex-col md:flex-row items-center justify-center gap-6">
-                 {verifiedContact ? (
-                   <div className="flex flex-wrap justify-center gap-4">
-                      {profile.email && (
-                        <a href={`mailto:${profile.email}`} className="px-8 py-4 bg-indigo-600 text-white rounded-full font-black flex items-center gap-3 group shadow-xl">
-                          <Mail size={22} className="group-hover:rotate-12 transition-transform" /> Say Hello
+              <div className="flex flex-col items-center justify-center gap-10">
+                {/* Email is always public */}
+                {profile.email && (
+                  <div className="flex flex-wrap justify-center gap-4">
+                    <a href={`mailto:${profile.email}`} className="px-10 py-5 bg-indigo-600 text-white rounded-full font-black text-xl flex items-center gap-4 group shadow-2xl hover:scale-105 transition-all">
+                      <Mail size={24} className="group-hover:rotate-12 transition-transform" /> Say Hello
+                    </a>
+                  </div>
+                )}
+
+                {verifiedContact ? (
+                  <div className="flex flex-col items-center gap-6 w-full">
+                    <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-widest border border-indigo-500/20">
+                      <ShieldCheck size={14} /> Verified as {verifiedContact.email}
+                    </span>
+                    {displayPhone && (
+                      <div className="flex items-center gap-3">
+                        <a href={`tel:${displayPhone}`} className="px-8 py-4 glass border-indigo-500/30 text-indigo-600 dark:text-indigo-400 rounded-full font-black flex items-center gap-3 shadow-sm hover:scale-105 transition-transform">
+                          <Phone size={20} /> {displayPhone}
                         </a>
-                      )}
-                      {profile.phone && (
-                        <a href={`tel:${profile.phone}`} className="px-8 py-4 glass border-indigo-500/30 text-indigo-600 dark:text-indigo-400 rounded-full font-black flex items-center gap-3 shadow-sm">
-                          <Phone size={20} /> Let's Talk
-                        </a>
-                      )}
-                   </div>
-                 ) : (
-                   <div className="flex flex-col items-center gap-8 w-full">
-                      <p className="text-gray-500 font-bold text-sm uppercase tracking-widest max-w-md">Verify your details to unlock a direct line of communication</p>
-                      <button
-                        type="button"
-                        onClick={() => setShowPhoneVerification((v) => !v)}
-                        className="px-10 py-5 bg-gradient-premium text-white rounded-full font-black text-xl shadow-2xl flex items-center gap-4 hover:scale-105 active:scale-95 transition-all shadow-indigo-500/30"
-                      >
-                        <Lock size={22} /> {showPhoneVerification ? 'Abandon Verification' : 'Start Secure Session'}
-                      </button>
-                      
-                      {showPhoneVerification && (
-                         <div className="w-full max-w-lg">
-                           <VerificationGate 
-                            featureLabel="secure contact protocols" 
-                            onVerified={(contact) => {
-                              setVerifiedContact(contact);
-                              setShowPhoneVerification(false);
-                            }} 
-                           />
-                         </div>
-                      )}
-                   </div>
-                 )}
+                        <button 
+                          onClick={() => {
+                            localStorage.removeItem('public_contact_verified');
+                            window.location.reload();
+                          }}
+                          title="Lock Information"
+                          className="p-4 rounded-full glass border-red-500/20 text-red-500 hover:bg-red-500/10 transition-all shadow-sm"
+                        >
+                          <Lock size={18} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-8 w-full">
+                    <p className="text-gray-500 font-bold text-sm uppercase tracking-widest max-w-md">Verify your details to unlock a direct line of communication</p>
+                    <button
+                      type="button"
+                      onClick={() => setShowPhoneVerification((v) => !v)}
+                      className="px-10 py-5 bg-gradient-premium text-white rounded-full font-black text-xl shadow-2xl flex items-center gap-4 hover:scale-105 active:scale-95 transition-all shadow-indigo-500/30"
+                    >
+                      <Lock size={22} /> {showPhoneVerification ? 'Abandon Verification' : 'Start Secure Session'}
+                    </button>
+                    
+                    {showPhoneVerification && (
+                      <div id="verification-gate" className="w-full max-w-lg">
+                        <VerificationGate 
+                          featureLabel="secure contact protocols" 
+                          onVerified={(contact) => {
+                            setVerifiedContact(contact);
+                            setShowPhoneVerification(false);
+                          }} 
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
            </motion.div>
         </div>

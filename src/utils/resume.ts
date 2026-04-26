@@ -34,9 +34,9 @@ export function createFallbackResume(): ResumeViewModel {
       about:
         'Java Backend Developer with 2+ years of experience building scalable business applications using Java, Spring Boot, PostgreSQL, and React.js. Strong background in ERP development, REST API design, RBAC security, reporting, and backend performance optimization.',
       email: 'sarangsvkm@gmail.com',
-      phone: '+91 7511133612',
+      phone: '+91 ••••• ••07',
       location: 'Alappuzha, Kerala, India',
-      imageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=500&q=80',
+      imageUrl: '/src/assets/images/sarang.jpg',
       bannerUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1400&q=80',
       resumeUrl: '',
       socialMediaLinks: defaultSocialLinks,

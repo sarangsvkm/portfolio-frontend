@@ -6,7 +6,7 @@ interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+const AdminProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const location = useLocation();
 
   if (!authService.isAuthenticated()) {
@@ -18,4 +18,4 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   return <>{children}</>;
 };
 
-export default ProtectedRoute;
+export default AdminProtectedRoute;

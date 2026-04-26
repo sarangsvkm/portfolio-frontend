@@ -98,6 +98,12 @@ export interface OtpVerification {
   otp: string;
 }
 
+export interface OtpVerificationResponse {
+  message: string;
+  phone?: string;
+  resumeUrl?: string;
+}
+
 export interface ContactRequest {
   id?: number | string;
   name: string;
