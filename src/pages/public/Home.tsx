@@ -23,6 +23,7 @@ import { resolveAssetUrl } from '../../utils/assetUrl';
 import VerificationGate from '../../components/public/VerificationGate';
 import { getVerifiedContact, type VerifiedContact } from '../../components/public/verificationStorage';
 import { getSocialIcon } from '../../utils/socialIcons';
+import AIFooter from '../../components/public/AIFooter';
 
 const PUBLIC_RESUME_CACHE_KEY = 'public_resume_cache';
 
@@ -506,6 +507,7 @@ export default function Home() {
            </motion.div>
         </div>
       </section>
+      <AIFooter />
     </div>
   );
 }
