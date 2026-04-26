@@ -211,7 +211,7 @@ export default function PublicLayout() {
 
           <div className="flex flex-col md:flex-row justify-between items-center pt-10 border-t border-gray-100 dark:border-white/5 gap-6">
             <p className="text-gray-400 dark:text-gray-600 text-sm font-medium">
-              &copy; {new Date().getFullYear()} <span className="font-bold text-gray-900 dark:text-gray-300">{logoName}</span>. Crafted for Excellence.
+              &copy; {new Date().getFullYear()} <span className="font-bold text-gray-900 dark:text-gray-300">{logoName}</span>. Designed by SRG.
             </p>
             <div className="flex gap-8 text-xs font-black uppercase tracking-[0.3em] text-gray-400 dark:text-gray-700">
               <span>Privacy</span>
