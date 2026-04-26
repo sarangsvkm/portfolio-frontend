@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => {
   const proxyTarget = resolveProxyTarget(env.VITE_API_BASE_URL);
 
   return {
-    base: './',
+    base: '/portfolio-frontend/',
     plugins: [
       tailwindcss(),
       react(),
