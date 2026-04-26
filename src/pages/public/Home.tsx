@@ -134,6 +134,8 @@ export default function Home() {
       <section id="about" className="relative min-h-[90vh] flex items-center justify-center overflow-hidden pt-32 pb-20 px-6">
         {/* Animated Background Gradients */}
         <div className="absolute inset-x-0 top-0 -z-10 h-[500px] bg-gradient-to-b from-indigo-500/5 to-transparent blur-[120px]" />
+        <div className="absolute inset-0 -z-20 opacity-[0.03] dark:opacity-[0.07] pointer-events-none" 
+             style={{ backgroundImage: `radial-gradient(circle at 2px 2px, rgba(99,102,241,0.4) 1px, transparent 0)`, backgroundSize: '40px 40px' }} />
         <div className="absolute top-1/4 left-1/4 -z-10 h-96 w-96 bg-purple-500/10 blur-[150px] animate-pulse" />
         <div className="absolute bottom-1/4 right-1/4 -z-10 h-72 w-72 bg-blue-500/10 blur-[120px] animate-pulse delay-700" />
         
