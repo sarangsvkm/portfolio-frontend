@@ -95,9 +95,9 @@ export default function PublicLayout() {
               </Link>
             </nav>
 
-            {/* Mobile Toggle (Inside Pill) */}
+            {/* Mobile Toggle */}
             <button 
-              className="md:hidden p-2 text-gray-600 dark:text-gray-300 ml-2"
+              className="md:hidden flex h-10 w-10 items-center justify-center rounded-xl glass border-white/20 text-gray-900 dark:text-white shadow-lg active:scale-90 transition-all ml-2"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -105,48 +105,66 @@ export default function PublicLayout() {
           </div>
         </motion.div>
 
-        {/* Mobile Menu Overlay */}
+        {/* Premium Mobile Menu Overlay */}
         <AnimatePresence>
           {isMenuOpen && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="fixed inset-0 z-[60] glass premium-blur md:hidden flex flex-col items-center justify-center gap-8 text-4xl font-black uppercase tracking-tighter"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[60] bg-white/80 dark:bg-black/90 backdrop-blur-2xl md:hidden"
             >
-               <button 
-                onClick={() => setIsMenuOpen(false)}
-                className="absolute top-10 right-10 p-4 rounded-full glass"
-              >
-                <X size={32} />
-              </button>
+              <div className="flex flex-col h-full px-10 py-20 relative">
+                <button 
+                  onClick={() => setIsMenuOpen(false)}
+                  className="absolute top-8 right-8 h-12 w-12 rounded-full glass border-white/20 flex items-center justify-center text-gray-950 dark:text-white"
+                >
+                  <X size={24} />
+                </button>
 
-              {navLinks.map((link, i) => (
-                <motion.a
+                <div className="mt-12 space-y-6">
+                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-600 dark:text-indigo-400">Navigation</p>
+                  <div className="flex flex-col gap-4">
+                    {navLinks.map((link, i) => (
+                      <motion.a
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.1 }}
+                        key={link.name}
+                        href={link.href}
+                        onClick={() => setIsMenuOpen(false)}
+                        className="text-4xl font-black tracking-tighter text-gray-950 dark:text-white hover:text-indigo-600 transition-colors"
+                      >
+                        {link.name}
+                      </motion.a>
+                    ))}
+                  </div>
+                </div>
+
+                <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  key={link.name}
-                  href={link.href}
-                  onClick={() => setIsMenuOpen(false)}
-                  className="text-gray-900 dark:text-white hover:text-indigo-600 transition-colors"
+                  transition={{ delay: 0.5 }}
+                  className="mt-12"
                 >
-                  {link.name}
-                </motion.a>
-              ))}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: navLinks.length * 0.1 }}
-              >
-                <Link
-                  to="/resume"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="px-10 py-4 bg-indigo-600 text-white rounded-full text-2xl font-bold"
-                >
-                  View Resume
-                </Link>
-              </motion.div>
+                  <Link
+                    to="/resume"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="inline-flex px-10 py-5 bg-indigo-600 text-white rounded-[24px] text-xl font-black shadow-2xl shadow-indigo-500/30"
+                  >
+                    View Resume
+                  </Link>
+                </motion.div>
+
+                <div className="mt-auto space-y-6">
+                  <div className="h-px w-full bg-gray-100 dark:bg-white/10" />
+                  <div className="flex gap-6">
+                    <a href="#" className="text-gray-400 hover:text-indigo-600 transition-colors"><Github size={24}/></a>
+                    <a href="#" className="text-gray-400 hover:text-indigo-600 transition-colors"><Linkedin size={24}/></a>
+                    <a href="#" className="text-gray-400 hover:text-indigo-600 transition-colors"><Mail size={24}/></a>
+                  </div>
+                </div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
