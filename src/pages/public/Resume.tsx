@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { motion, type Variants } from 'framer-motion';
-import { ArrowLeft, Mail, MapPin, Phone, Globe, ShieldCheck, Lock } from 'lucide-react';
+import { ArrowLeft, Mail, MapPin, Phone, Globe, Lock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { resumeService } from '../../services/resumeService';
 import type { ResumeViewModel } from '../../types';
 import { resolveAssetUrl } from '../../utils/assetUrl';
 import { createFallbackResume, normalizeResume } from '../../utils/resume';
-import { getVerifiedContact, type VerifiedContact } from '../../components/public/verificationStorage';
+import { getVerifiedContact } from '../../components/public/verificationStorage';
 
 const PUBLIC_RESUME_CACHE_KEY = 'public_resume_cache';
 
