@@ -158,10 +158,15 @@ export default function PublicLayout() {
 
                 <div className="mt-auto space-y-6">
                   <div className="h-px w-full bg-gray-100 dark:bg-white/10" />
-                  <div className="flex gap-6">
-                    <a href="#" className="text-gray-400 hover:text-indigo-600 transition-colors"><Github size={24}/></a>
-                    <a href="#" className="text-gray-400 hover:text-indigo-600 transition-colors"><Linkedin size={24}/></a>
-                    <a href="#" className="text-gray-400 hover:text-indigo-600 transition-colors"><Mail size={24}/></a>
+                  <div className="flex flex-col gap-6">
+                    <div className="flex gap-6">
+                      <a href="#" className="text-gray-400 hover:text-indigo-600 transition-colors"><Github size={24}/></a>
+                      <a href="#" className="text-gray-400 hover:text-indigo-600 transition-colors"><Linkedin size={24}/></a>
+                      <a href="#" className="text-gray-400 hover:text-indigo-600 transition-colors"><Mail size={24}/></a>
+                    </div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-gray-600">
+                      &copy; {new Date().getFullYear()} {logoName}. Designed by SRG.
+                    </p>
                   </div>
                 </div>
               </div>
