@@ -70,7 +70,7 @@ export default function PublicLayout() {
             </Link>
 
             {/* Desktop Nav */}
-            <nav className="flex gap-6 lg:gap-10 items-center text-xs lg:text-sm font-bold uppercase tracking-widest">
+            <nav className="hidden md:flex gap-6 lg:gap-10 items-center text-xs lg:text-sm font-bold uppercase tracking-widest">
               {navLinks.map((link) => (
                 <a 
                   key={link.name}
