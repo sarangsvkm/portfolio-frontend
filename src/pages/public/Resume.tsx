@@ -35,22 +35,13 @@ const itemVariants: Variants = {
 };
 
 export default function ResumePage() {
-  const [data, setData] = useState<ResumeViewModel>(() => {
-    if (typeof window === 'undefined') return normalizeResume(createFallbackResume());
-    const cached = localStorage.getItem(PUBLIC_RESUME_CACHE_KEY);
-    if (!cached) return normalizeResume(createFallbackResume());
-    try {
-      return normalizeResume(JSON.parse(cached) as ResumeViewModel);
-    } catch {
-      localStorage.removeItem(PUBLIC_RESUME_CACHE_KEY);
-      return normalizeResume(createFallbackResume());
-    }
-  });
-  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<ResumeViewModel | null>(null);
+  const [loading, setLoading] = useState(true);
   const verifiedContact = getVerifiedContact();
   const [profileImg, setProfileImg] = useState(defaultProfilePic);
 
   useEffect(() => {
+    if (!data) return;
     const imageUrl = data.profile.imageUrl;
     if (imageUrl && !imageUrl.includes('sarang.jpg')) {
       const resolved = resolveAssetUrl(imageUrl);
@@ -60,7 +51,7 @@ export default function ResumePage() {
     } else {
       setProfileImg(defaultProfilePic);
     }
-  }, [data.profile.imageUrl]);
+  }, [data?.profile.imageUrl]);
 
   useEffect(() => {
     let isMounted = true;
@@ -73,7 +64,17 @@ export default function ResumePage() {
       })
       .catch(() => {
         if (!isMounted) return;
-        setData((current) => current ?? normalizeResume(createFallbackResume()));
+        // On failure, try localStorage cache, then fallback
+        const cached = localStorage.getItem(PUBLIC_RESUME_CACHE_KEY);
+        if (cached) {
+          try {
+            setData(normalizeResume(JSON.parse(cached) as ResumeViewModel));
+            return;
+          } catch {
+            localStorage.removeItem(PUBLIC_RESUME_CACHE_KEY);
+          }
+        }
+        setData(normalizeResume(createFallbackResume()));
       })
       .finally(() => {
         if (isMounted) setLoading(false);
