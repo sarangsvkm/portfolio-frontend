@@ -1,17 +1,21 @@
-import { useEffect, useState } from 'react';
-import { Save, Loader2, Plus, Trash2, FolderGit2, Link2, Github } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Save, Loader2, Plus, Trash2, FolderGit2, Link2, Github, Upload, Image as ImageIcon, X } from 'lucide-react';
 import { resumeService } from '../../services/resumeService';
 import { authService } from '../../services/authService';
 import type { Project } from '../../types';
 import { createFallbackResume } from '../../utils/resume';
 import { useStatusDialog } from '../../hooks/useStatusDialog';
+import { resolveAssetUrl } from '../../utils/assetUrl';
 
 export default function ProjectsEditor() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingIndex, setSavingIndex] = useState<number | null>(null);
   const [deletingIndex, setDeletingIndex] = useState<number | null>(null);
+  const [uploadingImageIndex, setUploadingImageIndex] = useState<number | null>(null);
+  const [deletingImageIndex, setDeletingImageIndex] = useState<number | null>(null);
   const { showDialog, dialogElement } = useStatusDialog();
+  const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
     resumeService
@@ -75,6 +79,59 @@ export default function ProjectsEditor() {
     }
   };
 
+  const handleImageUpload = async (index: number, file: File) => {
+    const project = projects[index];
+    if (!project) return;
+
+    // Project must be saved first before we can upload an image
+    if (!project.id) {
+      showDialog('error', 'Save First', 'Please save the project before uploading an image.');
+      return;
+    }
+
+    setUploadingImageIndex(index);
+    try {
+      const auth = authService.getCredentials();
+      await resumeService.uploadProjectImage(project.id, file, auth);
+      const imageUrl = `/portfolioApi/api/projects/image/${project.id}`;
+      const updated = [...projects];
+      updated[index] = { ...updated[index], imageUrl };
+      setProjects(updated);
+      showDialog('success', 'Image Uploaded', 'Project image uploaded successfully.');
+    } catch (error) {
+      console.error('Error uploading project image', error);
+      showDialog('error', 'Upload Failed', 'Could not upload project image. Check backend and credentials.');
+    } finally {
+      setUploadingImageIndex(null);
+    }
+  };
+
+  const handleImageFileSelect = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    handleImageUpload(index, file);
+    e.target.value = '';
+  };
+
+  const handleImageDelete = async (index: number) => {
+    const project = projects[index];
+    if (!project?.id) return;
+
+    setDeletingImageIndex(index);
+    try {
+      await resumeService.deleteProjectImage(project.id, authService.getCredentials());
+      const updated = [...projects];
+      updated[index] = { ...updated[index], imageUrl: '' };
+      setProjects(updated);
+      showDialog('success', 'Image Deleted', 'Project image deleted successfully.');
+    } catch (error) {
+      console.error('Error deleting project image', error);
+      showDialog('error', 'Delete Failed', 'Could not delete project image.');
+    } finally {
+      setDeletingImageIndex(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -87,69 +144,127 @@ export default function ProjectsEditor() {
     <>
       {dialogElement}
       <div className="max-w-5xl space-y-6 pb-12">
-      <div className="flex justify-between items-center bg-white dark:bg-gray-950 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm sticky top-0 z-10 transition-colors">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <FolderGit2 className="w-6 h-6 text-purple-600" /> Project Configuration
-          </h2>
-          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Manage project cards, links, and tech stacks for the public portfolio.</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button onClick={handleAdd} className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl font-semibold transition-all">
-            <Plus className="w-4 h-4" /> Add New
-          </button>
-        </div>
-      </div>
-
-      <div className="space-y-6">
-        {projects.map((project, index) => (
-          <div key={project.id || index} className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm relative">
-            <button onClick={() => handleRemove(index)} disabled={deletingIndex === index} className="absolute top-6 right-6 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50">
-              {deletingIndex === index ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
+        <div className="flex justify-between items-center bg-white dark:bg-gray-950 p-6 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm sticky top-0 z-10 transition-colors">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <FolderGit2 className="w-6 h-6 text-purple-600" /> Project Configuration
+            </h2>
+            <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Manage project cards, links, images, and tech stacks for the public portfolio.</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button onClick={handleAdd} className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl font-semibold transition-all">
+              <Plus className="w-4 h-4" /> Add New
             </button>
+          </div>
+        </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pr-12">
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Project Title</label>
-                <input type="text" value={project.title} onChange={(e) => handleChange(index, 'title', e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Tech Stack</label>
-                <input type="text" value={project.techStack} onChange={(e) => handleChange(index, 'techStack', e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all" placeholder="React, Spring Boot, PostgreSQL" />
-              </div>
-              <div className="space-y-2 md:col-span-2">
-                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Description</label>
-                <textarea rows={4} value={project.description} onChange={(e) => handleChange(index, 'description', e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all resize-y" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2"><Github className="w-4 h-4" /> GitHub URL</label>
-                <input type="text" value={project.githubUrl || ''} onChange={(e) => handleChange(index, 'githubUrl', e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2"><Link2 className="w-4 h-4" /> Live URL</label>
-                <input type="text" value={project.link || ''} onChange={(e) => handleChange(index, 'link', e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all" />
-              </div>
-              <div className="space-y-2 md:col-span-2">
-                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Image URL</label>
-                <input type="text" value={project.imageUrl || ''} onChange={(e) => handleChange(index, 'imageUrl', e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all" />
-              </div>
-              <div className="md:col-span-2 flex justify-end">
-                <button onClick={() => handleSave(index)} disabled={savingIndex === index} className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-semibold shadow-md shadow-purple-500/20 transition-all disabled:opacity-50">
-                  {savingIndex === index ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                  {savingIndex === index ? 'Saving...' : project.id ? 'Update Project' : 'Create Project'}
-                </button>
+        <div className="space-y-6">
+          {projects.map((project, index) => (
+            <div key={project.id || index} className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 shadow-sm relative">
+              <button onClick={() => handleRemove(index)} disabled={deletingIndex === index} className="absolute top-6 right-6 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50">
+                {deletingIndex === index ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
+              </button>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pr-12">
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Project Title</label>
+                  <input type="text" value={project.title} onChange={(e) => handleChange(index, 'title', e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Tech Stack</label>
+                  <input type="text" value={project.techStack} onChange={(e) => handleChange(index, 'techStack', e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all" placeholder="React, Spring Boot, PostgreSQL" />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Description</label>
+                  <textarea rows={4} value={project.description} onChange={(e) => handleChange(index, 'description', e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all resize-y" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2"><Github className="w-4 h-4" /> GitHub URL</label>
+                  <input type="text" value={project.githubUrl || ''} onChange={(e) => handleChange(index, 'githubUrl', e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2"><Link2 className="w-4 h-4" /> Live URL</label>
+                  <input type="text" value={project.link || ''} onChange={(e) => handleChange(index, 'link', e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none transition-all" />
+                </div>
+
+                {/* Project Image Upload Section */}
+                <div className="md:col-span-2 space-y-3 pt-2 border-t border-gray-100 dark:border-gray-800">
+                  <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                    <ImageIcon className="w-4 h-4 text-purple-500" /> Project Image
+                  </label>
+
+                  {project.imageUrl ? (
+                    <div className="relative w-fit group">
+                      <img
+                        src={resolveAssetUrl(project.imageUrl)}
+                        alt={`${project.title} preview`}
+                        className="h-36 w-auto rounded-xl object-cover border border-gray-200 dark:border-gray-700 shadow-sm"
+                      />
+                      <button
+                        onClick={() => handleImageDelete(index)}
+                        disabled={deletingImageIndex === index}
+                        className="absolute top-2 right-2 p-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-all shadow disabled:opacity-50"
+                        title="Delete image"
+                      >
+                        {deletingImageIndex === index ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <X className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="rounded-xl border border-dashed border-gray-300 dark:border-gray-700 p-5 bg-gray-50 dark:bg-gray-900 text-sm text-center text-gray-400 dark:text-gray-500">
+                      No project image uploaded yet.
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap items-center gap-3">
+                    <label className={`inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl cursor-pointer transition-colors ${project.id ? 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200' : 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed opacity-60'}`} title={!project.id ? 'Save the project first to enable image upload' : 'Upload project image'}>
+                      {uploadingImageIndex === index ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                      {uploadingImageIndex === index ? 'Uploading...' : 'Upload Image'}
+                      <input
+                        ref={(el) => { fileInputRefs.current[index] = el; }}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        disabled={!project.id || uploadingImageIndex === index}
+                        onChange={(e) => handleImageFileSelect(index, e)}
+                      />
+                    </label>
+
+                    <div className="flex-1 min-w-0">
+                      <input
+                        type="text"
+                        value={project.imageUrl || ''}
+                        onChange={(e) => handleChange(index, 'imageUrl', e.target.value)}
+                        className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-purple-500 outline-none transition-all"
+                        placeholder="Or paste an image URL here..."
+                      />
+                    </div>
+                  </div>
+
+                  {!project.id && (
+                    <p className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                      Save the project first to enable direct image upload.
+                    </p>
+                  )}
+                </div>
+
+                <div className="md:col-span-2 flex justify-end">
+                  <button onClick={() => handleSave(index)} disabled={savingIndex === index} className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-semibold shadow-md shadow-purple-500/20 transition-all disabled:opacity-50">
+                    {savingIndex === index ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                    {savingIndex === index ? 'Saving...' : project.id ? 'Update Project' : 'Create Project'}
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
 
-        {projects.length === 0 && (
-          <div className="text-center py-12 bg-white dark:bg-gray-950 rounded-2xl border border-gray-200 dark:border-gray-800 border-dashed">
-            <FolderGit2 className="w-12 h-12 text-gray-300 dark:text-gray-700 mx-auto mb-4" />
-            <p className="text-gray-500 dark:text-gray-400">No projects added yet.</p>
-          </div>
-        )}
-      </div>
+          {projects.length === 0 && (
+            <div className="text-center py-12 bg-white dark:bg-gray-950 rounded-2xl border border-gray-200 dark:border-gray-800 border-dashed">
+              <FolderGit2 className="w-12 h-12 text-gray-300 dark:text-gray-700 mx-auto mb-4" />
+              <p className="text-gray-500 dark:text-gray-400">No projects added yet.</p>
+            </div>
+          )}
+        </div>
       </div>
     </>
   );

@@ -184,6 +184,26 @@ export const resumeService = {
     });
   },
 
+  uploadProjectImage: async (projectId: number | string, file: File, auth: AuthCredentials) => {
+    ensureCredentials(auth);
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await api.post(`/api/projects/image/${projectId}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        ...adminHeaders(auth),
+      },
+    });
+    return response.data;
+  },
+
+  deleteProjectImage: async (projectId: number | string, auth: AuthCredentials) => {
+    ensureCredentials(auth);
+    await api.delete(`/api/projects/image/${projectId}`, {
+      headers: adminHeaders(auth),
+    });
+  },
+
   deleteSocialLink: async (id: number | string, auth: AuthCredentials) => {
     ensureCredentials(auth);
     await api.delete(`/api/profile/social/${id}`, {
