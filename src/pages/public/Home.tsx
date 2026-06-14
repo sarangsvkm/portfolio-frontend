@@ -50,7 +50,7 @@ const itemVariants: Variants = {
 };
 
 export default function Home() {
-  const [data, setData] = useState<ResumeViewModel | null>(() => {
+  const [data, setData] = useState<ResumeViewModel>(() => {
     const cached = localStorage.getItem(PUBLIC_RESUME_CACHE_KEY);
     if (cached) {
       try {
@@ -59,9 +59,9 @@ export default function Home() {
         localStorage.removeItem(PUBLIC_RESUME_CACHE_KEY);
       }
     }
-    return null;
+    return normalizeResume(createFallbackResume());
   });
-  const [loading, setLoading] = useState(!data);
+  const [loading, setLoading] = useState(false);
   const [verifiedContact, setVerifiedContact] = useState<VerifiedContact | null>(() => getVerifiedContact());
   const location = useLocation();
   const [showPhoneVerification, setShowPhoneVerification] = useState(false);
@@ -105,12 +105,6 @@ export default function Home() {
       })
       .catch((err) => {
         console.error("Failed to fetch fresh resume:", err);
-        if (!isMounted) return;
-        // If there was no cached data and request failed, fallback
-        setData((current) => {
-          if (current) return current;
-          return normalizeResume(createFallbackResume());
-        });
       })
       .finally(() => {
         if (isMounted) setLoading(false);
