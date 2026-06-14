@@ -7,6 +7,7 @@ import type { ResumeViewModel } from '../../types';
 import { resolveAssetUrl } from '../../utils/assetUrl';
 import { createFallbackResume, normalizeResume } from '../../utils/resume';
 import { getVerifiedContact } from '../../components/public/verificationStorage';
+import defaultProfilePic from '../../assets/images/sarang.jpg';
 
 const PUBLIC_RESUME_CACHE_KEY = 'public_resume_cache';
 
@@ -47,6 +48,19 @@ export default function ResumePage() {
   });
   const [loading, setLoading] = useState(false);
   const verifiedContact = getVerifiedContact();
+  const [profileImg, setProfileImg] = useState(defaultProfilePic);
+
+  useEffect(() => {
+    const imageUrl = data.profile.imageUrl;
+    if (imageUrl && !imageUrl.includes('sarang.jpg')) {
+      const resolved = resolveAssetUrl(imageUrl);
+      const img = new Image();
+      img.src = resolved;
+      img.onload = () => setProfileImg(resolved);
+    } else {
+      setProfileImg(defaultProfilePic);
+    }
+  }, [data.profile.imageUrl]);
 
   useEffect(() => {
     let isMounted = true;
@@ -83,7 +97,7 @@ export default function ResumePage() {
 
   if (!data) return null;
 
-  const profileImageUrl = resolveAssetUrl(data.profile.imageUrl);
+  const profileImageUrl = profileImg;
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-12 sm:px-6 md:px-8">

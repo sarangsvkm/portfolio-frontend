@@ -23,6 +23,7 @@ import { resolveAssetUrl } from '../../utils/assetUrl';
 import VerificationGate from '../../components/public/VerificationGate';
 import { getVerifiedContact, type VerifiedContact } from '../../components/public/verificationStorage';
 import { getSocialIcon } from '../../utils/socialIcons';
+import defaultProfilePic from '../../assets/images/sarang.jpg';
 
 const PUBLIC_RESUME_CACHE_KEY = 'public_resume_cache';
 
@@ -64,6 +65,19 @@ export default function Home() {
   const [verifiedContact, setVerifiedContact] = useState<VerifiedContact | null>(() => getVerifiedContact());
   const location = useLocation();
   const [showPhoneVerification, setShowPhoneVerification] = useState(false);
+  const [profileImg, setProfileImg] = useState(defaultProfilePic);
+
+  useEffect(() => {
+    const imageUrl = data.profile.imageUrl;
+    if (imageUrl && !imageUrl.includes('sarang.jpg')) {
+      const resolved = resolveAssetUrl(imageUrl);
+      const img = new Image();
+      img.src = resolved;
+      img.onload = () => setProfileImg(resolved);
+    } else {
+      setProfileImg(defaultProfilePic);
+    }
+  }, [data.profile.imageUrl]);
 
   useEffect(() => {
     if (location.state?.requireVerify) {
@@ -114,7 +128,7 @@ export default function Home() {
   if (!data) return null;
 
   const { profile, projects, experiences, educations, skills } = data;
-  const profileImageUrl = resolveAssetUrl(profile.imageUrl);
+  const profileImageUrl = profileImg;
   const rawResumeUrl = verifiedContact?.ownerResumeUrl || profile.resumeUrl;
   const resumeUrl = resolveAssetUrl(rawResumeUrl);
   const displayPhone = verifiedContact?.ownerPhone || profile.phone;
