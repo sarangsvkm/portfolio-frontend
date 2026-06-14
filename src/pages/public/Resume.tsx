@@ -34,18 +34,18 @@ const itemVariants: Variants = {
 };
 
 export default function ResumePage() {
-  const [data, setData] = useState<ResumeViewModel | null>(() => {
-    if (typeof window === 'undefined') return null;
+  const [data, setData] = useState<ResumeViewModel>(() => {
+    if (typeof window === 'undefined') return normalizeResume(createFallbackResume());
     const cached = localStorage.getItem(PUBLIC_RESUME_CACHE_KEY);
-    if (!cached) return null;
+    if (!cached) return normalizeResume(createFallbackResume());
     try {
       return normalizeResume(JSON.parse(cached) as ResumeViewModel);
     } catch {
       localStorage.removeItem(PUBLIC_RESUME_CACHE_KEY);
-      return null;
+      return normalizeResume(createFallbackResume());
     }
   });
-  const [loading, setLoading] = useState(() => data === null);
+  const [loading, setLoading] = useState(false);
   const verifiedContact = getVerifiedContact();
 
   useEffect(() => {
