@@ -1,9 +1,5 @@
-import type { ResumeViewModel, SocialMediaLink } from '../types';
-
-const defaultSocialLinks: SocialMediaLink[] = [
-  { platform: 'GitHub', url: 'https://github.com/sarangsvkm' },
-  { platform: 'LinkedIn', url: 'https://linkedin.com/in/sarangsvkm' },
-];
+import type { ResumeViewModel } from '../types';
+import { fallbackResumeData } from './resumeData';
 
 export function createEmptyResume(): ResumeViewModel {
   return {
@@ -27,105 +23,7 @@ export function createEmptyResume(): ResumeViewModel {
 }
 
 export function createFallbackResume(): ResumeViewModel {
-  return {
-    profile: {
-      name: 'SARANG S',
-      title: 'Java Backend Developer',
-      about:
-        'Java Backend Developer with 2+ years of experience building scalable business applications using Java, Spring Boot, PostgreSQL, and React.js. Strong background in ERP development, REST API design, RBAC security, reporting, and backend performance optimization.',
-      email: 'sarangsvkm@gmail.com',
-      phone: '+91 ••••• ••07',
-      location: 'Alappuzha, Kerala, India',
-      imageUrl: '/src/assets/images/sarang.jpg',
-      bannerUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1400&q=80',
-      resumeUrl: '',
-      socialMediaLinks: defaultSocialLinks,
-    },
-    skills: [
-      { id: 1, name: 'Java', level: 'Advanced' },
-      { id: 2, name: 'Spring Boot', level: 'Advanced' },
-      { id: 3, name: 'PostgreSQL', level: 'Advanced' },
-      { id: 4, name: 'React.js', level: 'Intermediate' },
-      { id: 5, name: 'REST APIs', level: 'Advanced' },
-      { id: 6, name: 'JasperReports', level: 'Intermediate' },
-      { id: 7, name: 'MySQL', level: 'Intermediate' },
-      { id: 8, name: 'Python', level: 'Intermediate' },
-    ],
-    projects: [
-      {
-        id: 1,
-        title: 'Aurix ERP - Jewellery Management System',
-        description:
-          'Developed ERP modules for billing, inventory management, barcode tracking, credit purchase workflows, daily sales calculations, and operational reporting.',
-        techStack: 'Java, Spring Boot, PostgreSQL, JasperReports',
-        link: '',
-        githubUrl: '',
-        imageUrl:
-          'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1200&q=80',
-      },
-      {
-        id: 2,
-        title: 'AurixWeb - Web ERP Application',
-        description:
-          'Built a web-based ERP platform with modules for item management, sales tracking, and customer management.',
-        techStack: 'Spring Boot, PostgreSQL, React.js',
-        link: '',
-        githubUrl: '',
-        imageUrl:
-          'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80',
-      },
-      {
-        id: 3,
-        title: 'Payroll and HR Management System',
-        description:
-          'Developed employee management, payroll processing, HR policy tracking, and employee record modules for business operations.',
-        techStack: 'Java, SQL, Backend Architecture',
-        link: '',
-        githubUrl: '',
-        imageUrl:
-          'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80',
-      },
-    ],
-    experiences: [
-      {
-        id: 1,
-        company: 'Blogtec Software LLP',
-        role: 'Software Developer',
-        startDate: 'Aug 2023',
-        endDate: 'Present',
-        description:
-          'Developed and maintained jewellery ERP software covering billing, inventory, sales workflows, RBAC security, PostgreSQL integration, and JasperReports-based reporting.',
-      },
-      {
-        id: 2,
-        company: 'Kompetenzen Technologies',
-        role: 'Full Stack Developer Intern',
-        startDate: 'Oct 2022',
-        endDate: 'Mar 2023',
-        description:
-          'Developed Java and JSP-based web modules and supported backend development with SQL database integration.',
-      },
-      {
-        id: 3,
-        company: 'Inmakes Learning Hub',
-        role: 'Python Full Stack Developer Intern',
-        startDate: 'Sep 2022',
-        endDate: 'Dec 2022',
-        description:
-          'Built Python-based web applications and implemented backend functionality with database integration.',
-      },
-    ],
-    educations: [
-      {
-        id: 1,
-        institution: 'Mahaguru Institute of Technology, Kayamkulam',
-        degree: 'Bachelor of Technology (B.Tech)',
-        fieldOfStudy: 'Computer Science and Engineering',
-        startDate: '2018',
-        endDate: '2022',
-      },
-    ],
-  };
+  return normalizeResume(fallbackResumeData);
 }
 
 const cleanText = (value?: string | null) =>
