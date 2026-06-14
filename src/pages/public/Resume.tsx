@@ -35,8 +35,18 @@ const itemVariants: Variants = {
 };
 
 export default function ResumePage() {
-  const [data, setData] = useState<ResumeViewModel | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<ResumeViewModel | null>(() => {
+    const cached = localStorage.getItem(PUBLIC_RESUME_CACHE_KEY);
+    if (cached) {
+      try {
+        return normalizeResume(JSON.parse(cached) as ResumeViewModel);
+      } catch {
+        localStorage.removeItem(PUBLIC_RESUME_CACHE_KEY);
+      }
+    }
+    return null;
+  });
+  const [loading, setLoading] = useState(!data);
   const verifiedContact = getVerifiedContact();
   const [profileImg, setProfileImg] = useState(defaultProfilePic);
 
@@ -59,22 +69,22 @@ export default function ResumePage() {
       .then((res) => {
         const normalized = normalizeResume(res);
         if (!isMounted) return;
-        setData(normalized);
-        localStorage.setItem(PUBLIC_RESUME_CACHE_KEY, JSON.stringify(normalized));
-      })
-      .catch(() => {
-        if (!isMounted) return;
-        // On failure, try localStorage cache, then fallback
-        const cached = localStorage.getItem(PUBLIC_RESUME_CACHE_KEY);
-        if (cached) {
-          try {
-            setData(normalizeResume(JSON.parse(cached) as ResumeViewModel));
-            return;
-          } catch {
-            localStorage.removeItem(PUBLIC_RESUME_CACHE_KEY);
-          }
+        
+        const freshStr = JSON.stringify(normalized);
+        const cachedStr = localStorage.getItem(PUBLIC_RESUME_CACHE_KEY);
+        if (cachedStr !== freshStr) {
+          setData(normalized);
+          localStorage.setItem(PUBLIC_RESUME_CACHE_KEY, freshStr);
         }
-        setData(normalizeResume(createFallbackResume()));
+      })
+      .catch((err) => {
+        console.error("Failed to fetch fresh resume:", err);
+        if (!isMounted) return;
+        // If there was no cached data and request failed, fallback
+        setData((current) => {
+          if (current) return current;
+          return normalizeResume(createFallbackResume());
+        });
       })
       .finally(() => {
         if (isMounted) setLoading(false);
